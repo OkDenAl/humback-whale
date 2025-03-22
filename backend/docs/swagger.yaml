@@ -1,0 +1,75 @@
+basePath: /api/v1
+definitions:
+  handler.httpError:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+    type: object
+  handler.uploadImgReq:
+    properties:
+      description:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      whale_type:
+        type: string
+    type: object
+info:
+  contact:
+    name: humback-whale
+    url: https://github.com/OkDenAl/humback-whale
+  description: Text markup - it is the service for getting markup from text.
+  title: Humpback whale recognition service
+  version: "1.0"
+paths:
+  /upload/{author_id}:
+    post:
+      consumes:
+      - multipart/form-data
+      description: get markup from text
+      parameters:
+      - description: Image (bytes)
+        in: body
+        name: text
+        required: true
+        schema:
+          $ref: '#/definitions/handler.uploadImgReq'
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: File to upload
+        in: formData
+        name: latitude
+        type: integer
+      - description: File to upload
+        in: formData
+        name: longitude
+        type: integer
+      - description: Author ID (uuid)
+        in: path
+        name: author_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.httpError'
+      summary: get markup from text
+      tags:
+      - Markup
+swagger: "2.0"

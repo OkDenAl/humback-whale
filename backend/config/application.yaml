@@ -1,0 +1,24 @@
+env: prod
+log_level: debug
+
+http_server:
+  host: localhost
+  port: 8000
+  read_timeout: 5s
+  write_timeout: 5s
+  swagger_enabled: true
+
+postgres:
+  conn_string: # POSTGRES_CONN_STRING
+  ping_timeout: 5s
+  max_idle_lifetime: 10s
+  max_conn_lifetime: 5m
+  max_conn_amount: 30
+  min_conn_amount: 5
+
+minio_s3:
+  endpoint: localhost:9000
+  root_user: # MINIO_ROOT_USER
+  root_password: # MINIO_ROOT_PASSWORD
+  use_ssl: false
+  bucket_name: humpback-whale-image
