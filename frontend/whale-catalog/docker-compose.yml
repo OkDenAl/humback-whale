@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  frontend:
+    container_name: frontend
+    build: .
+    volumes:
+      - node_modules:/app
+
+volumes:
+  node_modules: {}
