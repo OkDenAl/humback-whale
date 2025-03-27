@@ -22,7 +22,6 @@ generate: go-mod-fix swag
 .PHONY: go-mod-fix
 go-mod-fix:
 	go mod tidy
-	go mod vendor
 
 
 .PHONY: run-env
