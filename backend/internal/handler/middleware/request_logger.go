@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"net/http"
 	"strconv"
 	"time"
 
@@ -26,6 +27,7 @@ func Logger() gin.HandlerFunc {
 					Str("method:", c.Request.Method).
 					Str("path", c.Request.URL.Path).
 					Str("status", strconv.Itoa(status)).
+					Interface("headers", c.Writer.Header()).
 					Msg("failed to processed request")
 			}
 
@@ -37,6 +39,23 @@ func Logger() gin.HandlerFunc {
 			Str("method:", c.Request.Method).
 			Str("path", c.Request.URL.Path).
 			Str("status", strconv.Itoa(status)).
+			Interface("headers", filterHeaders(c.Request.Header)).
 			Msg("request processed successfully")
 	}
+}
+
+var supportedHeaders = map[string]struct{}{
+	"Authorization": {},
+	"Referer":       {},
+	"Content-Type":  {},
+}
+
+func filterHeaders(hdrs http.Header) http.Header {
+	res := make(http.Header, len(supportedHeaders))
+	for k, v := range hdrs {
+		if _, ok := supportedHeaders[k]; ok {
+			res[k] = v
+		}
+	}
+	return res
 }

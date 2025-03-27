@@ -5,6 +5,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/pkg/errors"
+	"net/http"
 )
 
 type Config struct {
@@ -16,9 +17,14 @@ type Config struct {
 }
 
 func NewMinioClient(ctx context.Context, cfg Config) (*minio.Client, error) {
+	customTransport := &LoggingTransport{
+		Transport: http.DefaultTransport, // или другой базовый транспорт
+	}
+
 	client, err := minio.New(cfg.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(cfg.RootUser, cfg.RootPassword, ""),
-		Secure: cfg.UseSSL,
+		Creds:     credentials.NewStaticV4(cfg.RootUser, cfg.RootPassword, ""),
+		Secure:    cfg.UseSSL,
+		Transport: customTransport,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create miniorepo client")
@@ -30,7 +36,7 @@ func NewMinioClient(ctx context.Context, cfg Config) (*minio.Client, error) {
 	}
 
 	if !exists {
-		if err = client.MakeBucket(ctx, cfg.BucketName, minio.MakeBucketOptions{Region: "us-east-1"}); err != nil {
+		if err = client.MakeBucket(ctx, cfg.BucketName, minio.MakeBucketOptions{}); err != nil {
 			return nil, errors.Wrap(err, "failed to create bucket")
 		}
 	}

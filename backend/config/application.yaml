@@ -17,8 +17,30 @@ postgres:
   min_conn_amount: 5
 
 minio_s3:
-  endpoint: localhost:9000
+  endpoint: humpback-whale-minio:9000
   root_user: # MINIO_ROOT_USER
   root_password: # MINIO_ROOT_PASSWORD
   use_ssl: false
   bucket_name: humpback-whale-image
+
+ml_recognizer_http:
+  host: http://humpback-whale-ml-recognizer:8001/api/v1
+  timeout: 3s
+  backoff_timeout: 100ms
+  backoff_timeout_max: 700ms
+  retry_max: 3
+  max_idle_conns: 100
+  max_conns_per_host: 100
+  max_idle_conns_per_host: 100
+  circuit_breaker:
+    min_threshold: 20
+    failure_rate: 60
+    reset_interval: 10s
+    half_open_max_successes: 5
+    backoff_initial_interval: 1s
+    backoff_multiplier: 2.0
+    backoff_max_interval: 6s
+
+jwt_generator:
+  signing_key: # JWT_SIGNING_KEY
+  ttl: 24h

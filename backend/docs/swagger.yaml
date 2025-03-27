@@ -7,17 +7,39 @@ definitions:
       error:
         type: string
     type: object
-  handler.uploadImgReq:
+  handler.reqLogin:
     properties:
-      description:
+      email:
         type: string
-      latitude:
-        type: number
-      longitude:
-        type: number
-      whale_type:
+      password:
         type: string
     type: object
+  handler.reqRegister:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  handler.respLogin:
+    properties:
+      is_scientist:
+        type: boolean
+      token:
+        type: string
+      username:
+        type: string
+    type: object
+  handler.respRegister:
+    properties:
+      token:
+        type: string
+    type: object
+host: localhost:80
 info:
   contact:
     name: humback-whale
@@ -26,28 +48,22 @@ info:
   title: Humpback whale recognition service
   version: "1.0"
 paths:
-  /upload/{author_id}:
+  /private/upload/{author_id}:
     post:
       consumes:
       - multipart/form-data
       description: get markup from text
       parameters:
-      - description: Image (bytes)
-        in: body
-        name: text
-        required: true
-        schema:
-          $ref: '#/definitions/handler.uploadImgReq'
       - description: File to upload
         in: formData
         name: file
         required: true
         type: file
-      - description: File to upload
+      - description: Latitude
         in: formData
         name: latitude
         type: integer
-      - description: File to upload
+      - description: Longitude
         in: formData
         name: longitude
         type: integer
@@ -71,5 +87,73 @@ paths:
             $ref: '#/definitions/handler.httpError'
       summary: get markup from text
       tags:
-      - Markup
+      - Whale
+  /public/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: login user
+      parameters:
+      - description: JSON
+        in: body
+        name: text
+        required: true
+        schema:
+          $ref: '#/definitions/handler.reqLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.respLogin'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.httpError'
+      summary: login user
+      tags:
+      - Auth
+  /public/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: register user
+      parameters:
+      - description: JSON
+        in: body
+        name: text
+        required: true
+        schema:
+          $ref: '#/definitions/handler.reqRegister'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.respRegister'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.httpError'
+      summary: register user
+      tags:
+      - Auth
 swagger: "2.0"

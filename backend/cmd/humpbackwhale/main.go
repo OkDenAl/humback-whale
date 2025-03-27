@@ -2,11 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/OkDenAl/humback-whale/internal/repo/miniorepo"
-	"github.com/OkDenAl/humback-whale/internal/repo/postgres"
-	"github.com/OkDenAl/humback-whale/internal/usecase/uploadwhaleimg"
-	"github.com/OkDenAl/humback-whale/pkg/minioclient"
-	"github.com/OkDenAl/humback-whale/pkg/postgresclient"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,7 +9,16 @@ import (
 	"github.com/ds248a/closer"
 
 	_ "github.com/OkDenAl/humback-whale/docs"
+	"github.com/OkDenAl/humback-whale/internal/repo/http/mlrecognizer"
+	"github.com/OkDenAl/humback-whale/internal/repo/miniorepo"
+	"github.com/OkDenAl/humback-whale/internal/repo/postgres"
+	"github.com/OkDenAl/humback-whale/internal/service/jwtgenerator"
+	"github.com/OkDenAl/humback-whale/internal/usecase/login"
+	"github.com/OkDenAl/humback-whale/internal/usecase/register"
+	"github.com/OkDenAl/humback-whale/internal/usecase/uploadwhaleimg"
 	"github.com/OkDenAl/humback-whale/pkg/logger"
+	"github.com/OkDenAl/humback-whale/pkg/minioclient"
+	"github.com/OkDenAl/humback-whale/pkg/postgresclient"
 )
 
 // @title           Humpback whale recognition service
@@ -23,6 +27,7 @@ import (
 // @contact.name   humback-whale
 // @contact.url    https://github.com/OkDenAl/humback-whale
 // @BasePath  /api/v1
+// @Host localhost:80
 func main() {
 	cfg, err := setupConfig()
 	if err != nil {
@@ -33,6 +38,9 @@ func main() {
 
 	setupLogger(cfg)
 	log := logger.New()
+
+	// service
+	jwtGeneratorService := jwtgenerator.New(cfg.JWTGenerator)
 
 	// repo
 	pgPool, err := postgresclient.NewPool(ctx, cfg.Postgres)
@@ -47,10 +55,14 @@ func main() {
 	}
 	minioRepo := miniorepo.New(minioClient, cfg.MinioS3.BucketName)
 
-	// usecases
-	uploadWhaleImgUC := uploadwhaleimg.NewUC(pgRepo, minioRepo, nil)
+	mlrecognizerRepo := mlrecognizer.New(cfg.MlRecognizerHTTP)
 
-	errCh := initAndStartHTTPServer(cfg.HTTP, uploadWhaleImgUC)
+	// usecases
+	uploadWhaleImgUC := uploadwhaleimg.NewUC(pgRepo, minioRepo, mlrecognizerRepo)
+	loginUC := login.NewUC(jwtGeneratorService, pgRepo)
+	registerUC := register.NewUC(jwtGeneratorService, pgRepo)
+
+	errCh := initAndStartHTTPServer(cfg.HTTP, uploadWhaleImgUC, loginUC, registerUC)
 	printLocalURLS(cfg.HTTP.Port)
 
 	gracefulShutdown(errCh)

@@ -3,15 +3,14 @@ package mlrecognizer
 import "time"
 
 type ClientConfig struct {
-	Host           string               `yaml:"host" validate:"required"`
-	Port           string               `yaml:"port" validate:"required"`
-	Timeout        time.Duration        `yaml:"timeout" validate:"required"`
-	CircuitBreaker CircuitBreakerConfig `yaml:"circuit_breaker" validate:"required"`
-}
+	Host              string        `yaml:"host" validate:"required"`
+	Timeout           time.Duration `yaml:"timeout" validate:"required"`
+	BackoffTimeout    time.Duration `yaml:"backoff_timeout" validate:"required"`
+	BackoffTimeoutMax time.Duration `yaml:"backoff_timeout_max" validate:"required"`
+	RetryMax          int           `yaml:"retry_max"`
 
-type CircuitBreakerConfig struct {
-	HalfOpenMaxSuccesses int64         `yaml:"half_open_max_successes" validate:"required,gt=0"`
-	MinThreshold         int64         `yaml:"min_threshold" validate:"required,gt=0"`
-	FailureRate          float64       `yaml:"failure_rate" validate:"required,gt=0"`
-	CounterResetInterval time.Duration `yaml:"counter_reset_interval" validate:"required"`
+	MaxIdleConns        int                  `yaml:"max_idle_conns" validate:"required"`
+	MaxConnsPerHost     int                  `yaml:"max_conns_per_host" validate:"required"`
+	MaxIdleConnsPerHost int                  `yaml:"max_idle_conns_per_host" validate:"required"`
+	CircuitBreaker      CircuitBreakerConfig `yaml:"circuit_breaker" validate:"required"`
 }

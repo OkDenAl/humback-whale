@@ -19,7 +19,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/upload/{author_id}": {
+        "/private/upload/{author_id}": {
             "post": {
                 "description": "get markup from text",
                 "consumes": [
@@ -29,19 +29,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Markup"
+                    "Whale"
                 ],
                 "summary": "get markup from text",
                 "parameters": [
-                    {
-                        "description": "Image (bytes)",
-                        "name": "text",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.uploadImgReq"
-                        }
-                    },
                     {
                         "type": "file",
                         "description": "File to upload",
@@ -51,13 +42,13 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "File to upload",
+                        "description": "Latitude",
                         "name": "latitude",
                         "in": "formData"
                     },
                     {
                         "type": "integer",
-                        "description": "File to upload",
+                        "description": "Longitude",
                         "name": "longitude",
                         "in": "formData"
                     },
@@ -87,6 +78,110 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/public/auth/login": {
+            "post": {
+                "description": "login user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "login user",
+                "parameters": [
+                    {
+                        "description": "JSON",
+                        "name": "text",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.reqLogin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.respLogin"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/auth/register": {
+            "post": {
+                "description": "register user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "register user",
+                "parameters": [
+                    {
+                        "description": "JSON",
+                        "name": "text",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.reqRegister"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.respRegister"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -101,19 +196,52 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.uploadImgReq": {
+        "handler.reqLogin": {
             "type": "object",
             "properties": {
-                "description": {
+                "email": {
                     "type": "string"
                 },
-                "latitude": {
-                    "type": "number"
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.reqRegister": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
                 },
-                "longitude": {
-                    "type": "number"
+                "password": {
+                    "type": "string"
                 },
-                "whale_type": {
+                "role": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.respLogin": {
+            "type": "object",
+            "properties": {
+                "is_scientist": {
+                    "type": "boolean"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.respRegister": {
+            "type": "object",
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }
@@ -124,7 +252,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "",
+	Host:             "localhost:80",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Humpback whale recognition service",

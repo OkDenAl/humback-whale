@@ -19,18 +19,17 @@ import (
 // @Summary get markup from text
 // @Schemes
 // @Description get markup from text
-// @Tags Markup
-// @Param text body uploadImgReq  true  "Image (bytes)"
+// @Tags Whale
 // @Accept multipart/form-data
 // @Param file formData file true "File to upload"
-// @Param latitude formData int false "File to upload"
-// @Param longitude formData int false "File to upload"
+// @Param latitude formData int false "Latitude"
+// @Param longitude formData int false "Longitude"
 // @Param author_id  path string true "Author ID (uuid)"
 // @Produce json
 // @Success 200
 // @Success 400 {object} httpError
 // @Failure 500 {object} httpError
-// @Router /upload/{author_id} [post]
+// @Router /private/upload/{author_id} [post]
 func (h Handler) uploadImg() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logger.New()
@@ -111,7 +110,7 @@ func checkFileExtension(data []byte) error {
 }
 
 func getReq(c *gin.Context) (*uploadImgReq, error) {
-	fileHeader, err := c.FormFile("file")
+	fileHeader, err := c.FormFile("image")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get request file")
 	}
@@ -120,14 +119,22 @@ func getReq(c *gin.Context) (*uploadImgReq, error) {
 		return nil, errors.Wrap(err, "failed to get file data")
 	}
 
-	longitude, err := strconv.ParseFloat(c.PostForm("longitude"), 64)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get longitude")
+	var longitude float64
+	longitudeReq := c.PostForm("longitude")
+	if longitudeReq != "" {
+		longitude, err = strconv.ParseFloat(longitudeReq, 64)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get longitude")
+		}
 	}
 
-	latitude, err := strconv.ParseFloat(c.PostForm("latitude"), 64)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get latitude")
+	var latitude float64
+	latitudeReq := c.PostForm("latitude")
+	if latitudeReq != "" {
+		latitude, err = strconv.ParseFloat(latitudeReq, 64)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get latitude")
+		}
 	}
 
 	return &uploadImgReq{

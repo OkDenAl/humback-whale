@@ -11,7 +11,7 @@ func (uc UC) Handle(ctx context.Context, cmd Command) (string, error) {
 		return "", err
 	}
 
-	if err = uc.recognizerRepo.RecognizeWhales(ctx, cmd.Img); err != nil {
+	if err = uc.recognizerRepo.RecognizeWhale(ctx, imageInfo.URL); err != nil {
 		if err = uc.imageStorageRepo.DeleteImage(ctx, imageInfo.ObjectID.String()); err != nil {
 			return "", err
 		}

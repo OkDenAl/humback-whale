@@ -29,7 +29,7 @@ go-mod-fix:
 run-env: .before-run-env .base-run-env .after-run-env
 
 .base-run-env:
-	docker-compose --project-name humpbackwhale up -d --wait
+	docker-compose --project-name humpbackwhale up -d --build
 .before-run-env:
 .after-run-env: migrate-up
 
@@ -74,3 +74,11 @@ migrate-up: bin/migrate
 .PHONY: swag
 swag:
 	swag init -g ./cmd/humpbackwhale/main.go
+
+
+.PHONY: test
+test:
+	go test -v -count=1 ./... -race -coverprofile=initial-coverage.txt -covermode=atomic
+	grep -v 'internal/config' initial-coverage.txt  > coverage.txt
+	rm initial-coverage.txt
+	go tool cover -func coverage.txt | fgrep total | awk '{print "total coverage: "$$3}'

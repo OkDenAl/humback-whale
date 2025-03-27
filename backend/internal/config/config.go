@@ -2,20 +2,28 @@ package config
 
 import (
 	"fmt"
-	"github.com/OkDenAl/humback-whale/pkg/minioclient"
-	"github.com/OkDenAl/humback-whale/pkg/postgresclient"
+	"github.com/OkDenAl/humback-whale/internal/service/jwtgenerator"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/ilyakaznacheev/cleanenv"
+
+	"github.com/OkDenAl/humback-whale/internal/repo/http/mlrecognizer"
+	"github.com/OkDenAl/humback-whale/pkg/minioclient"
+	"github.com/OkDenAl/humback-whale/pkg/postgresclient"
 )
 
 type Config struct {
-	Env      string                `yaml:"env" validate:"required,oneof=prod local"`
-	LogLevel string                `yaml:"log_level" validate:"required"`
-	HTTP     ServerConfig          `yaml:"http_server" validate:"required"`
+	Env      string       `yaml:"env" validate:"required,oneof=prod local"`
+	LogLevel string       `yaml:"log_level" validate:"required"`
+	HTTP     ServerConfig `yaml:"http_server" validate:"required"`
+
 	Postgres postgresclient.Config `yaml:"postgres" validate:"required"`
 	MinioS3  minioclient.Config    `yaml:"minio_s3" validate:"required"`
+
+	MlRecognizerHTTP mlrecognizer.ClientConfig `yaml:"ml_recognizer_http" validate:"required"`
+
+	JWTGenerator jwtgenerator.Config `yaml:"jwt_generator" env-prefix:"JWT_" validate:"required"`
 }
 
 type ServerConfig struct {
@@ -33,8 +41,7 @@ func New(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
-	validate := validator.New()
-	if err = validate.Struct(cfg); err != nil {
+	if err = validator.New().Struct(cfg); err != nil {
 		return nil, err
 	}
 

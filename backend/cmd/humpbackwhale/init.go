@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/OkDenAl/humback-whale/internal/usecase/login"
+	"github.com/OkDenAl/humback-whale/internal/usecase/register"
 	"github.com/OkDenAl/humback-whale/internal/usecase/uploadwhaleimg"
 	"net/http"
 	"os"
@@ -41,6 +43,8 @@ func setupLogger(cfg *config.Config) {
 func initAndStartHTTPServer(
 	cfg config.ServerConfig,
 	uploadWhaleImgUC *uploadwhaleimg.UC,
+	loginUC *login.UC,
+	registerUC *register.UC,
 ) <-chan error {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
@@ -49,14 +53,22 @@ func initAndStartHTTPServer(
 		docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
 	}
 
-	h := handler.New(uploadWhaleImgUC)
+	h := handler.New(uploadWhaleImgUC, loginUC, registerUC)
 
-	api := engine.Group("api/v1")
-	api.Use(
+	publicApi := engine.Group("api/v1/public")
+	publicApi.Use(
 		gin.Recovery(),
 		middleware.Logger(),
 	)
-	h.SetRouter(api)
+	h.SetPublicRouter(publicApi)
+
+	privateApi := engine.Group("api/v1/private")
+	privateApi.Use(
+		gin.Recovery(),
+		middleware.Logger(),
+		middleware.Auth(),
+	)
+	h.SetPrivateRouter(privateApi)
 
 	s := &http.Server{
 		Addr:         ":" + cfg.Port,
