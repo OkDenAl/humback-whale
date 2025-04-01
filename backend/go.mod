@@ -11,6 +11,7 @@ require (
 	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.4.1
+	github.com/gojuno/minimock/v3 v3.0.10
 	github.com/golang-jwt/jwt/v5 v5.0.0-rc.2
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-retryablehttp v0.7.1
@@ -25,6 +26,7 @@ require (
 	github.com/swaggo/gin-swagger v1.4.1
 	github.com/swaggo/swag v1.7.9
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )
 
 require (

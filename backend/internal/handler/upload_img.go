@@ -15,26 +15,26 @@ import (
 )
 
 // @BasePath /api/v1
-// getMarkup godoc
-// @Summary get markup from text
+// uploadImg godoc
+// @Summary upload whale image
 // @Schemes
-// @Description get markup from text
+// @Description upload whale image
 // @Tags Whale
 // @Accept multipart/form-data
-// @Param file formData file true "File to upload"
+// @Param image formData file true "File to upload"
 // @Param latitude formData int false "Latitude"
 // @Param longitude formData int false "Longitude"
-// @Param author_id  path string true "Author ID (uuid)"
+// @Param Authorization header string true "authorization bearer token"
 // @Produce json
-// @Success 200
+// @Success 200 {object} uploadImgResp
 // @Success 400 {object} httpError
 // @Failure 500 {object} httpError
-// @Router /private/upload/{author_id} [post]
+// @Router /private/whale/upload [post]
 func (h Handler) uploadImg() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logger.New()
 
-		req, err := getReq(c)
+		req, err := getUploadImageReq(c)
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("failed to parse request")
 			c.JSON(
@@ -71,8 +71,8 @@ func (h Handler) uploadImg() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"url": url,
+		c.JSON(http.StatusOK, uploadImgResp{
+			URL: url,
 		})
 	}
 }
@@ -109,7 +109,7 @@ func checkFileExtension(data []byte) error {
 	return nil
 }
 
-func getReq(c *gin.Context) (*uploadImgReq, error) {
+func getUploadImageReq(c *gin.Context) (*uploadImgReq, error) {
 	fileHeader, err := c.FormFile("image")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get request file")
@@ -137,13 +137,18 @@ func getReq(c *gin.Context) (*uploadImgReq, error) {
 		}
 	}
 
+	authorID := c.GetHeader("X-Auth-ID")
+	if authorID == "" {
+		return nil, errors.WithStack(errors.Errorf("failed to get author id"))
+	}
+
 	return &uploadImgReq{
 		Img:         img,
 		Longitude:   longitude,
 		Latitude:    latitude,
 		Description: c.PostForm("description"),
 		WhaleType:   c.PostForm("whale_type"),
-		AuthorID:    c.Param("author_id"),
+		AuthorID:    authorID,
 	}, nil
 }
 
@@ -154,4 +159,8 @@ type uploadImgReq struct {
 	Description string
 	WhaleType   string
 	AuthorID    string
+}
+
+type uploadImgResp struct {
+	URL string `json:"url"`
 }

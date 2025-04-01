@@ -13,6 +13,8 @@ import (
 	"github.com/OkDenAl/humback-whale/internal/repo/miniorepo"
 	"github.com/OkDenAl/humback-whale/internal/repo/postgres"
 	"github.com/OkDenAl/humback-whale/internal/service/jwtgenerator"
+	"github.com/OkDenAl/humback-whale/internal/usecase/auth"
+	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
 	"github.com/OkDenAl/humback-whale/internal/usecase/login"
 	"github.com/OkDenAl/humback-whale/internal/usecase/register"
 	"github.com/OkDenAl/humback-whale/internal/usecase/uploadwhaleimg"
@@ -59,10 +61,13 @@ func main() {
 
 	// usecases
 	uploadWhaleImgUC := uploadwhaleimg.NewUC(pgRepo, minioRepo, mlrecognizerRepo)
+	getWhaleImgUC := getimages.NewUC(cfg.GetImagesUC, pgRepo, pgRepo, minioRepo)
+
 	loginUC := login.NewUC(jwtGeneratorService, pgRepo)
 	registerUC := register.NewUC(jwtGeneratorService, pgRepo)
+	authUC := auth.NewUC(jwtGeneratorService)
 
-	errCh := initAndStartHTTPServer(cfg.HTTP, uploadWhaleImgUC, loginUC, registerUC)
+	errCh := initAndStartHTTPServer(cfg.HTTP, uploadWhaleImgUC, getWhaleImgUC, loginUC, registerUC, authUC)
 	printLocalURLS(cfg.HTTP.Port)
 
 	gracefulShutdown(errCh)

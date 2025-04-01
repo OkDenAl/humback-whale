@@ -34,3 +34,12 @@ func UserRecordToDomain(user UserRecord) *domain.User {
 		Role:     user.Role,
 	}
 }
+
+func UserRecordsToDomain(users []UserRecord) []*domain.User {
+	var result []*domain.User
+	for _, user := range users {
+		result = append(result, UserRecordToDomain(user))
+	}
+
+	return result
+}

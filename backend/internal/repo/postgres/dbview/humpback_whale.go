@@ -45,3 +45,12 @@ func HumpbackWhaleRecordToDomain(whale HumpbackWhaleRecord) *domain.HumpbackWhal
 		ObjectID:    whale.ObjectID,
 	}
 }
+
+func HumpbackWhaleRecordsToDomain(whales []HumpbackWhaleRecord) []*domain.HumpbackWhale {
+	res := make([]*domain.HumpbackWhale, 0, len(whales))
+	for _, whale := range whales {
+		res = append(res, HumpbackWhaleRecordToDomain(whale))
+	}
+
+	return res
+}

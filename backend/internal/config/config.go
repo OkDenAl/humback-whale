@@ -1,14 +1,15 @@
 package config
 
 import (
-	"fmt"
-	"github.com/OkDenAl/humback-whale/internal/service/jwtgenerator"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/pkg/errors"
 
 	"github.com/OkDenAl/humback-whale/internal/repo/http/mlrecognizer"
+	"github.com/OkDenAl/humback-whale/internal/service/jwtgenerator"
+	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
 	"github.com/OkDenAl/humback-whale/pkg/minioclient"
 	"github.com/OkDenAl/humback-whale/pkg/postgresclient"
 )
@@ -24,6 +25,8 @@ type Config struct {
 	MlRecognizerHTTP mlrecognizer.ClientConfig `yaml:"ml_recognizer_http" validate:"required"`
 
 	JWTGenerator jwtgenerator.Config `yaml:"jwt_generator" env-prefix:"JWT_" validate:"required"`
+
+	GetImagesUC getimages.Config `yaml:"get_images_uc" validate:"required"`
 }
 
 type ServerConfig struct {
@@ -38,7 +41,7 @@ func New(configPath string) (*Config, error) {
 	cfg := &Config{}
 	err := cleanenv.ReadConfig(configPath, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read config: %w", err)
+		return nil, errors.Errorf("failed to read config: %v", err)
 	}
 
 	if err = validator.New().Struct(cfg); err != nil {

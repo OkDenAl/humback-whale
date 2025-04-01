@@ -8,11 +8,6 @@
   --border-radius: 13px;
 }
 
-#root {
-  display: flex;
-  width: 100%;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -20,11 +15,9 @@
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
-  color: var(--text-primary);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  place-items: normal;
+  width:100%
 }
 
 .app-bar {
@@ -32,11 +25,9 @@ body {
   color: white;
   padding: 1rem 2rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  width: 100%;
 }
 
 .app-bar-content {
-  max-width: 100%;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -70,7 +61,6 @@ body {
 .hero-section {
   text-align: center;
   margin: 4rem 0;
-  max-width: 1200px;
   width: 100%;
 }
 

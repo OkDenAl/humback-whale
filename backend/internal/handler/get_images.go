@@ -1,0 +1,118 @@
+package handler
+
+import (
+	"github.com/OkDenAl/humback-whale/internal/integrationerror"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+
+	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
+	"github.com/OkDenAl/humback-whale/internal/usecase/getimages/dto"
+	"github.com/OkDenAl/humback-whale/pkg/logger"
+	"github.com/OkDenAl/humback-whale/pkg/ptr"
+)
+
+// @BasePath /api/v1
+// getImages godoc
+// @Summary get images
+// @Schemes
+// @Description get markup from text
+// @Tags Whale
+// @Param limit query int true "Limit"
+// @Param cursor query time false "Longitude"
+// @Param Authorization header string true "authorization bearer token"
+// @Produce json
+// @Success 200 {object} getImagesResp
+// @Success 400 {object} httpError
+// @Failure 500 {object} httpError
+// @Router /private/whale/images [get]
+func (h Handler) getImages() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		log := logger.New()
+
+		req, err := getGetImagesReq(c)
+		if err != nil {
+			log.Error().Stack().Err(err).Msg("failed to parse request for get images")
+			c.JSON(
+				http.StatusBadRequest,
+				newError(errors.Wrap(err, "failed to parse request for get images"), http.StatusBadRequest),
+			)
+			return
+		}
+
+		q, err := getimages.NewQuery(req.Limit, req.Cursor)
+		if err != nil {
+			log.Error().Stack().Err(err).Msg("failed to create query for get images")
+			c.JSON(
+				http.StatusBadRequest,
+				newError(errors.Wrap(err, "failed to create query for get images"), http.StatusBadRequest),
+			)
+			return
+		}
+
+		res, err := h.getWhaleImageUC.Handle(c, q)
+		if err != nil {
+			log.Error().Stack().Err(err).Msg("failed to get images")
+			switch {
+			case errors.Is(err, integrationerror.ErrHumpbackWhaleNotFound):
+				c.JSON(
+					http.StatusNotFound,
+					newError(errors.Wrap(err, "failed to get images"), http.StatusNotFound),
+				)
+			default:
+				c.JSONP(
+					http.StatusInternalServerError,
+					newError(errors.Wrap(err, "failed to get images"), http.StatusInternalServerError),
+				)
+			}
+
+			return
+		}
+
+		c.JSON(http.StatusOK, getImagesResp{
+			WhaleImgs:   res.WhaleImgs,
+			NextPageURL: res.NextPageURL,
+			PrevPageURL: res.PrevPageURL,
+		})
+	}
+}
+
+func getGetImagesReq(c *gin.Context) (getImagesReq, error) {
+	limitStr := c.Query("limit")
+	if limitStr == "" {
+		return getImagesReq{}, errors.Errorf("limit is required")
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		return getImagesReq{}, errors.Wrap(err, "failed to parse limit")
+	}
+
+	var cursor time.Time
+	cursorStr := c.Query("cursor")
+	if cursorStr != "" {
+		cursor, err = time.Parse(time.RFC3339, cursorStr)
+		if err != nil {
+			return getImagesReq{}, errors.Wrap(err, "failed to parse cursor")
+		}
+	}
+
+	return getImagesReq{
+		Limit:  limit,
+		Cursor: ptr.NilIfZero(cursor),
+	}, nil
+}
+
+type getImagesReq struct {
+	Limit  int
+	Cursor *time.Time
+}
+
+type getImagesResp struct {
+	WhaleImgs   []dto.HumpbackWhaleImage `json:"whale_images"`
+	NextPageURL *string                  `json:"next_page_url,omitempty"`
+	PrevPageURL *string                  `json:"prev_page_url,omitempty"`
+}

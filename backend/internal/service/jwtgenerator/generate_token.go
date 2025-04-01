@@ -1,6 +1,7 @@
 package jwtgenerator
 
 import (
+	"context"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -13,7 +14,7 @@ type tokenClaims struct {
 	Role   string
 }
 
-func (s Service) GenerateToken(userID uuid.UUID, role string) (string, error) {
+func (s Service) GenerateToken(_ context.Context, userID uuid.UUID, role string) (string, error) {
 	expiresAt := &jwt.NumericDate{
 		Time: time.Now().Add(s.cfg.TokenTTL),
 	}

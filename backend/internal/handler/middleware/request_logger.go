@@ -45,9 +45,9 @@ func Logger() gin.HandlerFunc {
 }
 
 var supportedHeaders = map[string]struct{}{
-	"Authorization": {},
-	"Referer":       {},
-	"Content-Type":  {},
+	"Referer":      {},
+	"Content-Type": {},
+	"X-Auth-ID":    {},
 }
 
 func filterHeaders(hdrs http.Header) http.Header {

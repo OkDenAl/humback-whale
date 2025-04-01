@@ -27,7 +27,7 @@ func (c Repo) RecognizeWhale(ctx context.Context, url string) error {
 	var req *http.Request
 	req, err = http.NewRequestWithContext(
 		ctx,
-		"GET", fmt.Sprintf("%s/recognize", c.host),
+		http.MethodPost, fmt.Sprintf("%s/recognize", c.host),
 		bytes.NewBuffer(reqJSON),
 	)
 	if err != nil {

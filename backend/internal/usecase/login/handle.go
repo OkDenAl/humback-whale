@@ -18,7 +18,7 @@ func (uc UC) Handle(ctx context.Context, q Query) (QueryResult, error) {
 		return QueryResult{}, errors.Wrap(ErrInvalidPassword, "failed to compare password")
 	}
 
-	token, err := uc.jwtGeneratorRepo.GenerateToken(user.ID, user.Role.String())
+	token, err := uc.jwtGeneratorRepo.GenerateToken(ctx, user.ID, user.Role.String())
 	if err != nil {
 		return QueryResult{}, err
 	}

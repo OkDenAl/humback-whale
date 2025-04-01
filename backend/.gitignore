@@ -29,3 +29,4 @@ coverage.txt
 bin/**
 .DS_Store
 miniosolo
+vendor

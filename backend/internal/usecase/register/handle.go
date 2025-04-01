@@ -2,6 +2,7 @@ package register
 
 import (
 	"context"
+	"github.com/OkDenAl/humback-whale/internal/integrationerror"
 	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/bcrypt"
@@ -10,6 +11,14 @@ import (
 )
 
 func (uc UC) Handle(ctx context.Context, cmd Command) (string, error) {
+	_, err := uc.userRepo.GetUserByEmail(ctx, cmd.Email)
+	if err != nil && !errors.Is(err, integrationerror.ErrUserNotFound) {
+		return "", err
+	}
+	if err == nil {
+		return "", integrationerror.ErrUserAlreadyExists
+	}
+
 	hashed, err := hashAndSalt([]byte(cmd.Password))
 	if err != nil {
 		return "", err
@@ -21,7 +30,7 @@ func (uc UC) Handle(ctx context.Context, cmd Command) (string, error) {
 		return "", err
 	}
 
-	return uc.jwtGeneratorRepo.GenerateToken(user.ID, user.Role.String())
+	return uc.jwtGeneratorRepo.GenerateToken(ctx, user.ID, user.Role.String())
 }
 
 func hashAndSalt(pass []byte) (string, error) {

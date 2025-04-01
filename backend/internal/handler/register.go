@@ -20,7 +20,7 @@ import (
 // @Param   text body reqRegister  true  "JSON"
 // @Success 200 {object} respRegister
 // @Success 400 {object} httpError
-// @Success 404 {object} httpError
+// @Success 409 {object} httpError
 // @Failure 500 {object} httpError
 // @Router /public/auth/register [post]
 func (h Handler) register() gin.HandlerFunc {
@@ -51,10 +51,10 @@ func (h Handler) register() gin.HandlerFunc {
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("failed to register")
 			switch {
-			case errors.Is(err, integrationerror.ErrUserNotFound):
+			case errors.Is(err, integrationerror.ErrUserAlreadyExists):
 				c.JSON(
-					http.StatusNotFound,
-					newError(errors.Wrap(err, "failed to register"), http.StatusNotFound),
+					http.StatusConflict,
+					newError(errors.Wrap(err, "failed to register"), http.StatusConflict),
 				)
 			default:
 				c.JSON(

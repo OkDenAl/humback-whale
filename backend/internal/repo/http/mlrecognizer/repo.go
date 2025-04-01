@@ -8,7 +8,7 @@ import (
 
 type Repo struct {
 	host   string
-	client http.Client
+	client *http.Client
 }
 
 func New(cfg ClientConfig) Repo {
@@ -22,7 +22,7 @@ func New(cfg ClientConfig) Repo {
 	webClient.Logger = nil
 	webClient.HTTPClient.Transport = newTransport(cfg)
 
-	return Repo{client: http.Client{}, host: cfg.Host}
+	return Repo{client: webClient.StandardClient(), host: cfg.Host}
 }
 
 func newTransport(cfg ClientConfig) http.RoundTripper {

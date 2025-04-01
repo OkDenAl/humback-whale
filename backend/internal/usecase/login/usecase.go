@@ -15,7 +15,7 @@ type iUserRepo interface {
 }
 
 type iJWTGenerator interface {
-	GenerateToken(userID uuid.UUID, role string) (string, error)
+	GenerateToken(ctx context.Context, userID uuid.UUID, role string) (string, error)
 }
 
 // UC обработчик команд, удовлетворяющих интерфейсу Command.

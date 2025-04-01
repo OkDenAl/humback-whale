@@ -1,5 +1,35 @@
 basePath: /api/v1
 definitions:
+  dto.HumpbackWhaleImage:
+    properties:
+      author_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      username:
+        type: string
+      whale_type:
+        type: string
+    type: object
+  handler.getImagesResp:
+    properties:
+      next_page_url:
+        type: string
+      prev_page_url:
+        type: string
+      whale_images:
+        items:
+          $ref: '#/definitions/dto.HumpbackWhaleImage'
+        type: array
+    type: object
   handler.httpError:
     properties:
       code:
@@ -39,6 +69,11 @@ definitions:
       token:
         type: string
     type: object
+  handler.uploadImgResp:
+    properties:
+      url:
+        type: string
+    type: object
 host: localhost:80
 info:
   contact:
@@ -48,15 +83,47 @@ info:
   title: Humpback whale recognition service
   version: "1.0"
 paths:
-  /private/upload/{author_id}:
+  /private/whale/images:
+    get:
+      description: get markup from text
+      parameters:
+      - description: Latitude
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: authorization bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.getImagesResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.httpError'
+      summary: get images
+      tags:
+      - Whale
+  /private/whale/upload:
     post:
       consumes:
       - multipart/form-data
-      description: get markup from text
+      description: upload whale image
       parameters:
       - description: File to upload
         in: formData
-        name: file
+        name: image
         required: true
         type: file
       - description: Latitude
@@ -67,16 +134,18 @@ paths:
         in: formData
         name: longitude
         type: integer
-      - description: Author ID (uuid)
-        in: path
-        name: author_id
+      - description: authorization bearer token
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: ""
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.uploadImgResp'
         "400":
           description: Bad Request
           schema:
@@ -85,7 +154,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: get markup from text
+      summary: upload whale image
       tags:
       - Whale
   /public/auth/login:

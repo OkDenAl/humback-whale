@@ -7,11 +7,12 @@ import (
 )
 
 type iUserRepo interface {
+	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	CreateUser(ctx context.Context, user *domain.User) error
 }
 
 type iJWTGenerator interface {
-	GenerateToken(userID uuid.UUID, role string) (string, error)
+	GenerateToken(ctx context.Context, userID uuid.UUID, role string) (string, error)
 }
 
 // UC обработчик команд, удовлетворяющих интерфейсу Command.

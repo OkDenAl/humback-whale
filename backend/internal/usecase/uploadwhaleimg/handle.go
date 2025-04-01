@@ -2,6 +2,7 @@ package uploadwhaleimg
 
 import (
 	"context"
+	"errors"
 	"github.com/OkDenAl/humback-whale/internal/domain"
 )
 
@@ -11,13 +12,11 @@ func (uc UC) Handle(ctx context.Context, cmd Command) (string, error) {
 		return "", err
 	}
 
-	if err = uc.recognizerRepo.RecognizeWhale(ctx, imageInfo.URL); err != nil {
-		if err = uc.imageStorageRepo.DeleteImage(ctx, imageInfo.ObjectID.String()); err != nil {
-			return "", err
-		}
-
-		return "", err
-	}
+	//if err = uc.recognizerRepo.RecognizeWhale(ctx, imageInfo.URL); err != nil {
+	//	deleteError := uc.imageStorageRepo.DeleteImage(ctx, imageInfo.ObjectID.String())
+	//
+	//	return "", errors.Join(err, deleteError)
+	//}
 
 	whale := domain.NewHumpbackWhale(
 		cmd.AuthorID,
@@ -29,11 +28,9 @@ func (uc UC) Handle(ctx context.Context, cmd Command) (string, error) {
 	)
 
 	if err = uc.humpbackWhaleRepo.SaveWhale(ctx, whale); err != nil {
-		if err = uc.imageStorageRepo.DeleteImage(ctx, imageInfo.ObjectID.String()); err != nil {
-			return "", err
-		}
+		deleteError := uc.imageStorageRepo.DeleteImage(ctx, imageInfo.ObjectID.String())
 
-		return "", err
+		return "", errors.Join(err, deleteError)
 	}
 
 	return imageInfo.URL, nil

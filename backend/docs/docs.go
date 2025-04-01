@@ -19,9 +19,57 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/private/upload/{author_id}": {
-            "post": {
+        "/private/whale/images": {
+            "get": {
                 "description": "get markup from text",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Whale"
+                ],
+                "summary": "get images",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Latitude",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "authorization bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.getImagesResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/private/whale/upload": {
+            "post": {
+                "description": "upload whale image",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -31,12 +79,12 @@ const docTemplate = `{
                 "tags": [
                     "Whale"
                 ],
-                "summary": "get markup from text",
+                "summary": "upload whale image",
                 "parameters": [
                     {
                         "type": "file",
                         "description": "File to upload",
-                        "name": "file",
+                        "name": "image",
                         "in": "formData",
                         "required": true
                     },
@@ -54,15 +102,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Author ID (uuid)",
-                        "name": "author_id",
-                        "in": "path",
+                        "description": "authorization bearer token",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.uploadImgResp"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -185,6 +236,52 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.HumpbackWhaleImage": {
+            "type": "object",
+            "properties": {
+                "author_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "whale_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.getImagesResp": {
+            "type": "object",
+            "properties": {
+                "next_page_url": {
+                    "type": "string"
+                },
+                "prev_page_url": {
+                    "type": "string"
+                },
+                "whale_images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.HumpbackWhaleImage"
+                    }
+                }
+            }
+        },
         "handler.httpError": {
             "type": "object",
             "properties": {
@@ -242,6 +339,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.uploadImgResp": {
+            "type": "object",
+            "properties": {
+                "url": {
                     "type": "string"
                 }
             }
