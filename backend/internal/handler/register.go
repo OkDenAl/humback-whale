@@ -19,8 +19,8 @@ import (
 // @Produce json
 // @Param   text body reqRegister  true  "JSON"
 // @Success 200 {object} respRegister
-// @Success 400 {object} httpError
-// @Success 409 {object} httpError
+// @Failure 400 {object} httpError
+// @Failure 409 {object} httpError
 // @Failure 500 {object} httpError
 // @Router /public/auth/register [post]
 func (h Handler) register() gin.HandlerFunc {

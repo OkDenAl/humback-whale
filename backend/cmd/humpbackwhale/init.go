@@ -19,6 +19,7 @@ import (
 	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
 	"github.com/OkDenAl/humback-whale/internal/usecase/login"
 	"github.com/OkDenAl/humback-whale/internal/usecase/register"
+	"github.com/OkDenAl/humback-whale/internal/usecase/updateimginfo"
 	"github.com/OkDenAl/humback-whale/internal/usecase/uploadwhaleimg"
 	"github.com/OkDenAl/humback-whale/pkg/logger"
 )
@@ -49,6 +50,7 @@ func initAndStartHTTPServer(
 	loginUC *login.UC,
 	registerUC *register.UC,
 	authUC *auth.UC,
+	updateWhaleImageInfoUC *updateimginfo.UC,
 ) <-chan error {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
@@ -57,7 +59,7 @@ func initAndStartHTTPServer(
 		docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
 	}
 
-	h := handler.New(uploadWhaleImgUC, getWhaleImgUC, loginUC, registerUC)
+	h := handler.New(uploadWhaleImgUC, getWhaleImgUC, loginUC, registerUC, updateWhaleImageInfoUC)
 
 	publicApi := engine.Group("api/v1/public")
 	publicApi.Use(

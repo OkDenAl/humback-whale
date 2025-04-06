@@ -28,14 +28,26 @@ const docTemplate = `{
                 "tags": [
                     "Whale"
                 ],
-                "summary": "get images",
+                "summary": "get images with filters",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Latitude",
+                        "description": "Limit",
                         "name": "limit",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Author id",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Whale type",
+                        "name": "whale_type",
+                        "in": "query"
                     },
                     {
                         "type": "string",
@@ -51,6 +63,53 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/handler.getImagesResp"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/private/whale/update": {
+            "post": {
+                "description": "update images info",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Whale"
+                ],
+                "summary": "update images info",
+                "parameters": [
+                    {
+                        "description": "Req body json",
+                        "name": "limit",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.updateImageInfoReq"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "authorization bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
                     },
                     "400": {
                         "description": "Bad Request",
@@ -89,13 +148,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
+                        "type": "number",
                         "description": "Latitude",
                         "name": "latitude",
                         "in": "formData"
                     },
                     {
-                        "type": "integer",
+                        "type": "number",
                         "description": "Longitude",
                         "name": "longitude",
                         "in": "formData"
@@ -219,8 +278,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/handler.httpError"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/handler.httpError"
                         }
@@ -249,6 +308,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "image_url": {
                     "type": "string"
                 },
                 "latitude": {
@@ -339,6 +401,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.updateImageInfoReq": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "img_id": {
+                    "type": "string"
+                },
+                "whale_type": {
                     "type": "string"
                 }
             }

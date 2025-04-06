@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import AppIcon from './assets/react.svg'; // Импорт иконки
+import AppIcon from './assets/whale.jpg'; // Импорт иконки
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import CatalogPage from './CatalogPage';
+
 
 // Добавим иконку меню для мобильной версии
 import { FaSignInAlt, FaUserPlus } from 'react-icons/fa';
@@ -9,7 +12,7 @@ interface User {
     author_id: string;
     token: string;
     username: string;
-    isScientist?: boolean; // Добавляем опциональное поле
+    is_scientist: boolean; // Добавляем опциональное поле
 }
 
 interface FormData {
@@ -23,7 +26,7 @@ interface AuthModalProps {
     authType: 'login' | 'register';
     setAuthType: (type: 'login' | 'register') => void;
     onClose: () => void;
-    onAuth: (credentials: { email: string; password: string }) => void;
+    onAuth: (credentials: { email: string; password: string; username: string }) => void;
     loading: boolean;
     error: string;
 }
@@ -49,14 +52,14 @@ const App: React.FC = () => {
         }
     }, []);
 
-    const handleAuth = async (credentials: { email: string; password: string }) => {
+    const handleAuth = async (credentials: { email: string; password: string; username:string;}) => {
         try {
             setLoading(true);
             const endpoint = authType === 'login' ? 'login' : 'register';
             const response = await fetch(`http://localhost:80/api/v1/public/auth/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(credentials)
+                body: JSON.stringify(credentials),
             });
 
             if (!response.ok) throw new Error(await response.text());
@@ -106,7 +109,7 @@ const App: React.FC = () => {
             formData.longitude && formPayload.append('longitude', formData.longitude);
 
             const response = await fetch(
-                `http://localhost:80/api/v1/private/upload/${user.author_id}`,
+                `http://localhost:80/api/v1/private/whale/upload`,
                 {
                     method: 'POST',
                     headers: {
@@ -133,14 +136,17 @@ const App: React.FC = () => {
     };
 
     return (
+        <Router>
         <div className="App">
             <header className="app-bar">
                 <div className="app-bar-content">
-                    <div className="logo">
-                        <img src={AppIcon} alt="Whale Icon" className="app-icon"/>
-                        <span>WhaleCatalog</span>
-                    </div>
-
+                    <img src={AppIcon} alt="Whale Icon" className="app-icon"/>
+                    <Link to="/" className="link">
+                       Главная
+                    </Link>
+                    <Link to="/catalog" className="link">
+                        Каталог
+                    </Link>
                     <nav className="nav-links">
                         {!user ? (
                             <>
@@ -152,7 +158,7 @@ const App: React.FC = () => {
                                     }}
                                 >
                                     <FaSignInAlt/>
-                                    <span>Sign In</span>
+                                    <span>Войти</span>
                                 </button>
                                 <button
                                     className="auth-btn primary"
@@ -162,17 +168,17 @@ const App: React.FC = () => {
                                     }}
                                 >
                                     <FaUserPlus/>
-                                    <span>Register</span>
+                                    <span>Зарегистрироваться</span>
                                 </button>
                             </>
                         ) : (
                             <div className="user-panel">
-                                <span>Welcome, {user.username}</span>
+                                <span>{user.username}</span>
                                 <button
                                     className="logout-btn"
                                     onClick={handleLogout}
                                 >
-                                    Logout
+                                    Выйти
                                 </button>
                             </div>
                         )}
@@ -181,6 +187,9 @@ const App: React.FC = () => {
             </header>
 
             <main className="main-content">
+            <Routes>
+                    <Route path="/" element={
+                        <>
                 <div className="hero-section">
                     <h1>Discover the Ocean Giants</h1>
                     <p className="hero-text">
@@ -255,6 +264,10 @@ const App: React.FC = () => {
                         {error && <div className="error-message">{error}</div>}
                     </form>
                 </div>
+                        </>
+                    } />
+                    <Route path="/catalog" element={<CatalogPage />} />
+                </Routes>
             </main>
 
             {showAuthModal && (
@@ -270,6 +283,7 @@ const App: React.FC = () => {
 
             {showAuthWarning && <AuthWarning />}
         </div>
+        </Router>
     );
 };
 
@@ -284,6 +298,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
     const [credentials, setCredentials] = useState({
         email: '',
         password: '',
+        username:'',
         isScientist: false // Новое поле
     });
 
@@ -313,6 +328,15 @@ const AuthModal: React.FC<AuthModalProps> = ({
                         required
                         className="auth-input"
                     />
+                    {authType === 'register' && (<input
+                        type="username"
+                        placeholder="username"
+                        value={credentials.username}
+                        onChange={(e) => setCredentials({...credentials, username: e.target.value})}
+                        required
+                        className="auth-input"
+                    />
+                    )}
                     <input
                         type="password"
                         placeholder="Password"

@@ -18,13 +18,15 @@ postgres:
 
 minio_s3:
   endpoint: localhost:9000
+#  endpoint: humpback-whale-minio:9000
   root_user: # MINIO_ROOT_USER
   root_password: # MINIO_ROOT_PASSWORD
   use_ssl: false
   bucket_name: humpback-whale-image
 
 ml_recognizer_http:
-  host: http://localhost:8001/api/v1
+#  host: http://localhost:8001/api/v1
+  host: http://humpback-whale-ml-recognizer:8001/api/v1
   timeout: 3s
   backoff_timeout: 100ms
   backoff_timeout_max: 700ms
@@ -46,4 +48,5 @@ jwt_generator:
   ttl: 24h
 
 get_images_uc:
-  url_page_template: http://localhost:8000/api/v1/private/whale/images?limit={limit}&cursor={cursor}
+#  url_page_template: http://localhost:8000/api/v1/public/whale/images?limit={limit}&cursor={cursor} #local
+  url_page_template: http://localhost:80/api/v1/public/whale/images?limit={limit}&cursor={cursor}

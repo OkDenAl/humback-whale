@@ -17,6 +17,7 @@ import (
 	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
 	"github.com/OkDenAl/humback-whale/internal/usecase/login"
 	"github.com/OkDenAl/humback-whale/internal/usecase/register"
+	"github.com/OkDenAl/humback-whale/internal/usecase/updateimginfo"
 	"github.com/OkDenAl/humback-whale/internal/usecase/uploadwhaleimg"
 	"github.com/OkDenAl/humback-whale/pkg/logger"
 	"github.com/OkDenAl/humback-whale/pkg/minioclient"
@@ -25,8 +26,8 @@ import (
 
 // @title           Humpback whale recognition service
 // @version         1.0
-// @description     Text markup - it is the service for getting markup from text.
-// @contact.name   humback-whale
+// @description     Humpback whale recognition - it is the service for recognize humpback whale and store it in catalog.
+// @contact.name   humpback-whale
 // @contact.url    https://github.com/OkDenAl/humback-whale
 // @BasePath  /api/v1
 // @Host localhost:80
@@ -62,12 +63,22 @@ func main() {
 	// usecases
 	uploadWhaleImgUC := uploadwhaleimg.NewUC(pgRepo, minioRepo, mlrecognizerRepo)
 	getWhaleImgUC := getimages.NewUC(cfg.GetImagesUC, pgRepo, pgRepo, minioRepo)
+	updateWhaleImageInfoUC := updateimginfo.NewUC(pgRepo)
 
 	loginUC := login.NewUC(jwtGeneratorService, pgRepo)
 	registerUC := register.NewUC(jwtGeneratorService, pgRepo)
 	authUC := auth.NewUC(jwtGeneratorService)
 
-	errCh := initAndStartHTTPServer(cfg.HTTP, uploadWhaleImgUC, getWhaleImgUC, loginUC, registerUC, authUC)
+	errCh := initAndStartHTTPServer(
+		cfg.HTTP,
+		uploadWhaleImgUC,
+		getWhaleImgUC,
+		loginUC,
+		registerUC,
+		authUC,
+		updateWhaleImageInfoUC,
+	)
+
 	printLocalURLS(cfg.HTTP.Port)
 
 	gracefulShutdown(errCh)

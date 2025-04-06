@@ -36,3 +36,15 @@ func NewHumpbackWhale(
 		ObjectID:    objectID,
 	}
 }
+
+func (h *HumpbackWhale) Describe(description string) {
+	if description != "" {
+		h.Description = description
+	}
+}
+
+func (h *HumpbackWhale) SpecifyWhaleType(whaleType string) {
+	if whaleType != "" {
+		h.WhaleType = whaleType
+	}
+}

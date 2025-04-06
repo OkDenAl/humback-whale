@@ -13,7 +13,16 @@ import (
 )
 
 func (u UC) Handle(ctx context.Context, q Query) (QueryResult, error) {
-	images, err := u.humpbackWhaleRepo.GetWhalesBeforeCursor(ctx, q.Limit, q.Cursor)
+	var authorID *uuid.UUID
+	if q.Username != nil {
+		user, err := u.userRepo.GetUserByUsername(ctx, *q.Username)
+		if err != nil {
+			return QueryResult{}, err
+		}
+		authorID = &user.ID
+	}
+
+	images, err := u.humpbackWhaleRepo.GetWhalesBeforeCursor(ctx, q.Limit, q.Cursor, authorID, q.WhaleType)
 	if err != nil {
 		return QueryResult{}, err
 	}
@@ -22,20 +31,19 @@ func (u UC) Handle(ctx context.Context, q Query) (QueryResult, error) {
 		nextPageUrl *string
 		prevPageUrl *string
 	)
-
 	if len(images) >= q.Limit {
 		nextPageUrl = u.buildPageURL(q.Limit, images[len(images)-1].CreatedAt)
 		images = images[:len(images)-1]
 	}
 
 	if q.Cursor != nil {
-		img, err := u.humpbackWhaleRepo.GetWhalesAfterCursor(ctx, q.Limit, q.Cursor)
+		img, err := u.humpbackWhaleRepo.GetWhalesAfterCursor(ctx, q.Limit, q.Cursor, authorID, q.WhaleType)
 		if err != nil {
 			return QueryResult{}, err
 		}
 
 		if len(img) > 0 {
-			prevPageUrl = u.buildPageURL(q.Limit, img[0].CreatedAt)
+			prevPageUrl = u.buildPageURL(q.Limit, img[len(img)-1].CreatedAt)
 		}
 	}
 

@@ -9,18 +9,33 @@ import (
 )
 
 type Query struct {
-	Limit  int
-	Cursor *time.Time
+	Limit           int
+	Cursor          *time.Time
+	Username        *string
+	WhaleType       *string
+	StartTimePeriod *time.Time
+	EndTimePeriod   *time.Time
 }
 
-func NewQuery(limit int, cursor *time.Time) (Query, error) {
+func NewQuery(
+	limit int,
+	cursor *time.Time,
+	username *string,
+	whaleType *string,
+	startTimePeriod *time.Time,
+	endTimePeriod *time.Time,
+) (Query, error) {
 	if limit <= 0 {
 		return Query{}, errors.Errorf("limit must be greater than 0")
 	}
 
 	return Query{
-		Limit:  limit,
-		Cursor: cursor,
+		Limit:           limit,
+		Cursor:          cursor,
+		Username:        username,
+		WhaleType:       whaleType,
+		StartTimePeriod: startTimePeriod,
+		EndTimePeriod:   endTimePeriod,
 	}, nil
 }
 

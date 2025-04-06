@@ -32,8 +32,7 @@ services:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=veryhardpass
       - MINIO_SKIP_CLIENT=yes
-      # указываем использование https
-      - MINIO_SCHEME=https
+      - MINIO_SCHEME=http
       - MINIO_CONSOLE_PORT_NUMBER=9001
     networks: [backend]
     volumes:
@@ -47,24 +46,25 @@ services:
       - ../frontend/whale-catalog/dist:/usr/share/nginx/html
     ports:
       - "80:80"
-    depends_on: [ humpback-whale ]
     networks: [ backend ]
     restart: always
 
-  humpback-whale:
-    build: .
-    container_name: humpback-whale
-    environment:
-      POSTGRES_CONN_STRING: ${POSTGRES_CONN_STRING}
-      MIGRATE_ENDPOINT: ${MIGRATE_ENDPOINT}
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
-    depends_on: [  humpback-whale-postgres, humpback-whale-minio ]
-    ports:
-      - "8000:8000"
-    networks: [backend]
-    restart: always
+#  humpback-whale:
+#    build: .
+#    container_name: humpback-whale
+#    environment:
+#      POSTGRES_CONN_STRING: ${POSTGRES_CONN_STRING}
+#      MIGRATE_ENDPOINT: ${MIGRATE_ENDPOINT}
+#      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+#      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+#      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
+#    depends_on:
+#      - humpback-whale-postgres
+#      - humpback-whale-minio
+#    ports:
+#      - "8000:8000"
+#    networks: [ backend ]
+#    restart: always
 
   humpback-whale-ml-recognizer:
     build: ../ml

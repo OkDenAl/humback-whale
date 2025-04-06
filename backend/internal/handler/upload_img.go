@@ -22,12 +22,12 @@ import (
 // @Tags Whale
 // @Accept multipart/form-data
 // @Param image formData file true "File to upload"
-// @Param latitude formData int false "Latitude"
-// @Param longitude formData int false "Longitude"
+// @Param latitude formData number false "Latitude"
+// @Param longitude formData number false "Longitude"
 // @Param Authorization header string true "authorization bearer token"
 // @Produce json
 // @Success 200 {object} uploadImgResp
-// @Success 400 {object} httpError
+// @Failure 400 {object} httpError
 // @Failure 500 {object} httpError
 // @Router /private/whale/upload [post]
 func (h Handler) uploadImg() gin.HandlerFunc {

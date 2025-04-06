@@ -10,6 +10,8 @@ definitions:
         type: string
       id:
         type: string
+      image_url:
+        type: string
       latitude:
         type: number
       longitude:
@@ -69,6 +71,15 @@ definitions:
       token:
         type: string
     type: object
+  handler.updateImageInfoReq:
+    properties:
+      description:
+        type: string
+      img_id:
+        type: string
+      whale_type:
+        type: string
+    type: object
   handler.uploadImgResp:
     properties:
       url:
@@ -87,11 +98,19 @@ paths:
     get:
       description: get markup from text
       parameters:
-      - description: Latitude
+      - description: Limit
         in: query
         name: limit
         required: true
         type: integer
+      - description: Author id
+        in: query
+        name: username
+        type: string
+      - description: Whale type
+        in: query
+        name: whale_type
+        type: string
       - description: authorization bearer token
         in: header
         name: Authorization
@@ -112,7 +131,38 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: get images
+      summary: get images with filters
+      tags:
+      - Whale
+  /private/whale/update:
+    post:
+      description: update images info
+      parameters:
+      - description: Req body json
+        in: body
+        name: limit
+        required: true
+        schema:
+          $ref: '#/definitions/handler.updateImageInfoReq'
+      - description: authorization bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.httpError'
+      summary: update images info
       tags:
       - Whale
   /private/whale/upload:
@@ -129,11 +179,11 @@ paths:
       - description: Latitude
         in: formData
         name: latitude
-        type: integer
+        type: number
       - description: Longitude
         in: formData
         name: longitude
-        type: integer
+        type: number
       - description: authorization bearer token
         in: header
         name: Authorization
@@ -214,8 +264,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/handler.httpError'
-        "404":
-          description: Not Found
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/handler.httpError'
         "500":

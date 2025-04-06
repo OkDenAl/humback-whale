@@ -29,13 +29,14 @@ func Auth(uc iAuthUC) gin.HandlerFunc {
 			return
 		}
 
-		accessToken := strings.Split(authHeader, " ")[1]
-		if accessToken == "" {
+		splitted := strings.Split(authHeader, " ")
+		if len(splitted) != 2 || !slices.Contains(splitted, "Bearer") && splitted[1] == "" {
 			log.Warn().Msg("access token is empty")
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
+		accessToken := splitted[1]
 		query, err := auth.NewQuery(accessToken)
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("failed to create query")

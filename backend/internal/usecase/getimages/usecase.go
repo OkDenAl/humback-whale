@@ -11,11 +11,12 @@ import (
 
 type iUserRepo interface {
 	GetUsersByIDs(ctx context.Context, ids []uuid.UUID) ([]*domain.User, error)
+	GetUserByUsername(ctx context.Context, username string) (*domain.User, error)
 }
 
 type iHumpbackWhaleRepo interface {
-	GetWhalesBeforeCursor(ctx context.Context, limit int, cursor *time.Time) ([]*domain.HumpbackWhale, error)
-	GetWhalesAfterCursor(ctx context.Context, limit int, cursor *time.Time) ([]*domain.HumpbackWhale, error)
+	GetWhalesBeforeCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleType *string) ([]*domain.HumpbackWhale, error)
+	GetWhalesAfterCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleType *string) ([]*domain.HumpbackWhale, error)
 }
 
 type iImageRepo interface {
