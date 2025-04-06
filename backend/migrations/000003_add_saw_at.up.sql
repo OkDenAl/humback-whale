@@ -1,0 +1,1 @@
+ALTER TABLE humpback_whale ADD saw_at TIMESTAMP NOT NULL;

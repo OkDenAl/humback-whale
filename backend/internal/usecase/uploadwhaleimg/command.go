@@ -1,6 +1,8 @@
 package uploadwhaleimg
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
@@ -12,9 +14,10 @@ type Command struct {
 	Latitude    float64
 	Description string
 	WhaleType   string
+	SawAt       time.Time
 }
 
-func NewCommand(img []byte, longitude, latitude float64, description, whaleType, authorID string) (Command, error) {
+func NewCommand(img []byte, longitude, latitude float64, description, whaleType, authorID string, sawAt time.Time) (Command, error) {
 	if authorID == "" {
 		return Command{}, errors.Errorf("author_id is empty")
 	}
@@ -35,5 +38,6 @@ func NewCommand(img []byte, longitude, latitude float64, description, whaleType,
 		Latitude:    latitude,
 		Description: description,
 		WhaleType:   whaleType,
+		SawAt:       sawAt,
 	}, nil
 }

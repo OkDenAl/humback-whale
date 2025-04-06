@@ -5,6 +5,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,7 @@ import (
 // @Param image formData file true "File to upload"
 // @Param latitude formData number false "Latitude"
 // @Param longitude formData number false "Longitude"
+// @Param saw_at formData number false "Saw at"
 // @Param Authorization header string true "authorization bearer token"
 // @Produce json
 // @Success 200 {object} uploadImgResp
@@ -51,6 +53,7 @@ func (h Handler) uploadImg() gin.HandlerFunc {
 			req.Description,
 			req.WhaleType,
 			req.AuthorID,
+			req.SawAt,
 		)
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("failed to validate request data")
@@ -142,13 +145,22 @@ func getUploadImageReq(c *gin.Context) (*uploadImgReq, error) {
 		return nil, errors.WithStack(errors.Errorf("failed to get author id"))
 	}
 
+	var sawAt time.Time
+	cursorStr := c.PostForm("saw_at")
+	if cursorStr != "" {
+		sawAt, err = time.Parse(time.DateOnly, cursorStr)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to parse cursor")
+		}
+	}
+
 	return &uploadImgReq{
-		Img:         img,
-		Longitude:   longitude,
-		Latitude:    latitude,
-		Description: c.PostForm("description"),
-		WhaleType:   c.PostForm("whale_type"),
-		AuthorID:    authorID,
+		Img:       img,
+		Longitude: longitude,
+		Latitude:  latitude, Description: c.PostForm("description"),
+		WhaleType: c.PostForm("whale_type"),
+		AuthorID:  authorID,
+		SawAt:     sawAt,
 	}, nil
 }
 
@@ -156,6 +168,7 @@ type uploadImgReq struct {
 	Img         []byte
 	Longitude   float64
 	Latitude    float64
+	SawAt       time.Time
 	Description string
 	WhaleType   string
 	AuthorID    string

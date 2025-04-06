@@ -13,6 +13,7 @@ type HumpbackWhaleRecord struct {
 	ID          uuid.UUID `db:"id"`
 	AuthorID    uuid.UUID `db:"author_id"`
 	CreatedAt   time.Time `db:"created_at"`
+	SawAt       time.Time `db:"saw_at"`
 	Longitude   float64   `db:"longitude"`
 	Latitude    float64   `db:"latitude"`
 	Description string    `db:"description"`
@@ -30,6 +31,7 @@ func HumpbackWhaleRecordFromDomain(whale *domain.HumpbackWhale) HumpbackWhaleRec
 		Description: whale.Description,
 		WhaleType:   whale.WhaleType,
 		ObjectID:    whale.ObjectID,
+		SawAt:       whale.SawAt,
 	}
 }
 
@@ -43,6 +45,7 @@ func HumpbackWhaleRecordToDomain(whale HumpbackWhaleRecord) *domain.HumpbackWhal
 		Description: whale.Description,
 		WhaleType:   whale.WhaleType,
 		ObjectID:    whale.ObjectID,
+		SawAt:       whale.SawAt,
 	}
 }
 

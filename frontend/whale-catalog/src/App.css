@@ -4,7 +4,7 @@
   --light-blue: #e8f0fe;
   --dark-blue: #1557b0;
   --text-primary: #ffffff;
-  --text-secondary: #ffffff;
+  --text-secondary: #3a3a3a;
   --dark-gray: #3a3a3a; /* Новый цвет */
   --border-radius: 13px;
 }
@@ -19,6 +19,8 @@ body {
   display: grid;
   place-items: normal;
   width:100%;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://static.tildacdn.com/tild6236-6335-4962-a362-633266626664/561.jpg') no-repeat;
+  background-size: cover;
 }
 
 .app-bar-content {
@@ -26,9 +28,9 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
-  background: var(--primary-blue);
+  background: rgba(26, 115, 232, 0.7); /* Полупрозрачный фон */
+  backdrop-filter: blur(5px); /* Эффект размытия */
   color: white;
-  padding: 1rem 2rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -37,8 +39,9 @@ body {
   gap: 2rem;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1rem;
+  padding: 2rem 2rem;
   right: 0;
+  position: absolute;
 }
 
 .nav-link:hover {
@@ -46,7 +49,7 @@ body {
 }
 
 .link {
-  color: var(--text-secondary);
+  color: var(--text-primary);
   gap: 0.8rem;
   font-size: 1.5rem;
   font-weight: 500;
@@ -54,9 +57,9 @@ body {
 }
 
 .app-icon {
-  display: flex;
-  width:3%;
-  height: 3%;
+  width:5%;
+  height: 5%;
+  padding: 1rem;
 }
 
 .main-content {
@@ -75,7 +78,7 @@ body {
 }
 
 .hero-text {
-  color: var(--text-secondary);
+  color: var(--light-blue);
   width: 100%;
   margin: 1.5rem auto;
   line-height: 1.6;
@@ -85,11 +88,22 @@ body {
 .upload-card {
   background: white;
   border-radius: 12px;
+  color: var(--dark-gray);
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   padding: 3rem;
   margin: 2rem 0;
   width: 100%;
   max-width: 1200px;
+}
+
+.header-card{
+  color: var(--ocean-blue);
+}
+
+.header-card-main{
+  display: flex;
+  align-content: center;
+  color: var(--primary-blue);
 }
 
 .upload-title {
@@ -123,6 +137,7 @@ body {
   margin: 2rem 0;
   display: flex;
   justify-content: center;
+  color: var(--text-secondary);
 }
 
 .preview-image {
@@ -131,6 +146,7 @@ body {
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   object-fit: contain;
+  color: var(--text-secondary);
 }
 
 .coordinates-grid {
@@ -150,7 +166,7 @@ body {
 .submit-btn {
   width: 100%;
   margin: 0 auto;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   background-color: var(--ocean-blue);
 }
 
@@ -306,4 +322,149 @@ button{
 @keyframes modalAppear {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
+}
+
+/* Стили для карты и контейнера */
+.map-date-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.map-container {
+  height: 300px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 2px solid var(--primary-blue);
+}
+
+.selection-map {
+  height: 100%;
+  width: 100%;
+}
+
+/* Стили для поля даты */
+.date-input-container {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: var(--light-blue);
+  border-radius: var(--border-radius);
+}
+
+.date-label {
+  width: 100%;
+  color: var(--dark-gray);
+  font-weight: 500;
+}
+
+.date-input {
+  width: 100%;
+  padding: 0.8rem;
+  margin-top: 0.5rem;
+  border: 2px solid var(--primary-blue);
+  border-radius: 8px;
+  background: white;
+  font-size: 1rem;
+  color: var(--dark-gray);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .map-date-container {
+    grid-template-columns: 1fr;
+  }
+
+  .map-container {
+    height: 250px;
+  }
+}
+
+/* Обновляем стили координатных полей */
+.coordinates-grid input {
+  background: white;
+  border: 2px solid var(--primary-blue);
+  color: var(--dark-gray);
+  border-radius: 8px;
+}
+
+.coordinates-grid input::placeholder {
+  color: #a0aec0;
+}
+
+/* Индикаторы загрузки */
+.loading-spinner,
+.button-spinner {
+  border: 3px solid var(--light-blue);
+  border-top: 3px solid var(--primary-blue);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+.button-spinner {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Сообщение об успехе */
+.success-message {
+  text-align: center;
+  padding: 2rem;
+}
+
+.success-icon {
+  font-size: 4rem;
+  color: #4CAF50;
+  margin-bottom: 1rem;
+  animation: bounce 0.5s;
+}
+
+.upload-another-btn {
+  margin-top: 2rem;
+  padding: 0.8rem 2rem;
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.upload-another-btn:hover {
+  opacity: 0.9;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.preview-container {
+  position: relative;
+}
+
+.preview-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: none;
+}
+
+.preview-container.loading::after {
+  display: block;
 }

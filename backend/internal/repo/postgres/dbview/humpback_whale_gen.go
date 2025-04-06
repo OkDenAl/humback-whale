@@ -12,6 +12,7 @@ func (view HumpbackWhaleRecord) Vals() []any {
 		view.ID,
 		view.AuthorID,
 		view.CreatedAt,
+		view.SawAt,
 		view.Longitude,
 		view.Latitude,
 		view.Description,
@@ -32,6 +33,7 @@ type HumpbackWhaleFieldsType struct {
 	ID          string
 	AuthorID    string
 	CreatedAt   string
+	SawAt       string
 	Longitude   string
 	Latitude    string
 	Description string
@@ -43,6 +45,7 @@ var humpbackWhaleFields = HumpbackWhaleFieldsType{
 	ID:          `"id"`,
 	AuthorID:    `"author_id"`,
 	CreatedAt:   `"created_at"`,
+	SawAt:       `"saw_at"`,
 	Longitude:   `"longitude"`,
 	Latitude:    `"latitude"`,
 	Description: `"description"`,
@@ -62,6 +65,7 @@ func (HumpbackWhaleFieldsType) All() []string {
 		`"id"`,
 		`"author_id"`,
 		`"created_at"`,
+		`"saw_at"`,
 		`"longitude"`,
 		`"latitude"`,
 		`"description"`,

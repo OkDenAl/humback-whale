@@ -17,6 +17,7 @@ interface WhaleImage {
     author_id: string;
     username: string;
     created_at: string;
+    saw_at: string;
     longitude: number;
     latitude: number;
     description: string;
@@ -266,14 +267,14 @@ const CatalogPage: React.FC = () => {
                 {/* Карта */}
                 <div className="map-container">
                     <MapContainer
-                        center={[30, 0]}
+                        center={[61, 90]}
                         zoom={1.5}
                         className="leaflet-map"
                         style={{ border: '2px solid var(--primary-blue)', borderRadius: '8px' }}
+                        attributionControl={false}
                     >
                         <TileLayer
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         />
                         {Object.entries(groupImagesByLocation(images)).map(([key, group]) => {
                             const [lat, lng] = key.split(',').map(Number);
@@ -292,7 +293,7 @@ const CatalogPage: React.FC = () => {
                                                         <div className="image-info">
                                                             {image.whale_type && <div>Type: {image.whale_type}</div>}
                                                             <div>By: {image.username}</div>
-                                                            <div>{new Date(image.created_at).toLocaleDateString()}</div>
+                                                            <div>{new Date(image.saw_at).toLocaleDateString()}</div>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -327,13 +328,13 @@ const CatalogPage: React.FC = () => {
                         />
                         <div className="image-meta">
                             <h3>{image.whale_type || "Неизвестный тип кита"}</h3>
-                            <p>{image.description || "Без описания"}</p>
+                            <p className="descr">{image.description || "Без описания"}</p>
 
                             <div className="meta-info">
                                 <div className="user-info">
                                     <span className="author">👤 {image.username}</span>
                                     <span className="date">
-                    🗓 {new Date(image.created_at).toLocaleDateString('en-US', {
+                    🗓 {new Date(image.saw_at).toLocaleDateString('en-US', {
                                         year: 'numeric',
                                         month: 'long',
                                         day: 'numeric'

@@ -33,6 +33,35 @@
     border-bottom: 2px solid var(--light-blue);
 }
 
+/* Стили для контейнера описания */
+.descr {
+    max-height: 50px; /* Фиксированная высота для скролла */
+    overflow-y: auto;
+    padding-right: 10px;
+    margin: 10px 0;
+    line-height: 1.4;
+    color: var(--text-secondary);
+}
+
+/* Кастомизация скроллбара */
+.descr::-webkit-scrollbar {
+    width: 6px;
+}
+
+.descr::-webkit-scrollbar-track {
+    background: rgba(26, 115, 232, 0.1);
+    border-radius: 3px;
+}
+
+.descr::-webkit-scrollbar-thumb {
+    background: var(--primary-blue);
+    border-radius: 3px;
+}
+
+.descr::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-blue);
+}
+
 .user-info {
     display: flex;
     justify-content: space-between;
@@ -118,6 +147,7 @@
     background: #ffffff;
     color: black;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
+
 }
 
 .meta-info {

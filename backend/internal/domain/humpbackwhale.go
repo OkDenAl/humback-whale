@@ -10,6 +10,7 @@ type HumpbackWhale struct {
 	ID          uuid.UUID
 	AuthorID    uuid.UUID
 	CreatedAt   time.Time
+	SawAt       time.Time
 	Longitude   float64
 	Latitude    float64
 	Description string
@@ -24,16 +25,24 @@ func NewHumpbackWhale(
 	description string,
 	whaleType string,
 	objectID uuid.UUID,
+	sawAt time.Time,
 ) *HumpbackWhale {
+	now := time.Now()
+
+	if sawAt.IsZero() || sawAt.Unix() == 0 {
+		sawAt = now
+	}
+
 	return &HumpbackWhale{
 		ID:          uuid.New(),
 		AuthorID:    authorID,
-		CreatedAt:   time.Now(),
+		CreatedAt:   now,
 		Longitude:   longitude,
 		Latitude:    latitude,
 		Description: description,
 		WhaleType:   whaleType,
 		ObjectID:    objectID,
+		SawAt:       sawAt,
 	}
 }
 

@@ -3,7 +3,26 @@ import './App.css';
 import AppIcon from './assets/whale.jpg'; // Импорт иконки
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import CatalogPage from './CatalogPage';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet'
 
+// Фикс для иконок маркеров
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const MapClickHandler = ({ onMapClick }: { onMapClick: (lat: number, lng: number) => void }) => {
+    useMapEvents({
+        click: (e) => {
+            onMapClick(e.latlng.lat, e.latlng.lng);
+        },
+    });
+    return null;
+};
 
 // Добавим иконку меню для мобильной версии
 import { FaSignInAlt, FaUserPlus } from 'react-icons/fa';
@@ -20,6 +39,7 @@ interface FormData {
     preview: string | null;
     latitude: string;
     longitude: string;
+    saw_at: string; // Новое поле
 }
 
 interface AuthModalProps {
@@ -40,10 +60,14 @@ const App: React.FC = () => {
         image: null,
         preview: null,
         latitude: '',
-        longitude: ''
+        longitude: '',
+        saw_at: '',
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+    const [isUploadSuccess, setIsUploadSuccess] = useState(false);
 
     useEffect(() => {
         const savedUser = localStorage.getItem('whaleUser');
@@ -88,11 +112,15 @@ const App: React.FC = () => {
 
         const file = e.target.files?.[0];
         if (file) {
-            setFormData({
-                ...formData,
-                image: file,
-                preview: URL.createObjectURL(file)
-            });
+            setIsPreviewLoading(true);
+            setTimeout(() => { // Имитация загрузки для демонстрации
+                setFormData({
+                    ...formData,
+                    image: file,
+                    preview: URL.createObjectURL(file)
+                });
+                setIsPreviewLoading(false);
+            }, 1000);
         }
     };
 
@@ -102,11 +130,12 @@ const App: React.FC = () => {
         if (!user) return setShowAuthModal(true);
 
         try {
-            setLoading(true);
+            setIsLoading(true);
             const formPayload = new FormData();
             formData.image && formPayload.append('image', formData.image);
             formData.latitude && formPayload.append('latitude', formData.latitude);
             formData.longitude && formPayload.append('longitude', formData.longitude);
+            formData.saw_at && formPayload.append('saw_at', formData.saw_at);
 
             const response = await fetch(
                 `http://localhost:80/api/v1/private/whale/upload`,
@@ -118,15 +147,23 @@ const App: React.FC = () => {
                     body: formPayload
                 }
             );
+            if (response.ok) {
+                setIsUploadSuccess(true);
+            }
 
             if (!response.ok) throw new Error(await response.text());
 
-            alert('Изображение успешно загружено!');
-            setFormData({ image: null, preview: null, latitude: '', longitude: '' });
+            setFormData({
+                image: null,
+                preview: null,
+                latitude: '',
+                longitude: '',
+                saw_at: ''
+            });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Ошибка загрузки');
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -190,84 +227,160 @@ const App: React.FC = () => {
             <Routes>
                     <Route path="/" element={
                         <>
-                <div className="hero-section">
-                    <h1>Discover the Ocean Giants</h1>
-                    <p className="hero-text">
-                        Join our community to track whale sightings and contribute
-                        to marine conservation efforts worldwide.
-                    </p>
-                </div>
-
-                <div className="upload-card">
-                    <h2 className="upload-title">
-                        Report a Sighting
-                    </h2>
-
-                    <form onSubmit={handleSubmit} className="upload-form">
-                        <div className="preview-container">
-                            {formData.preview ? (
-                                <img
-                                    src={formData.preview}
-                                    alt="Preview"
-                                    className="preview-image"
-                                />
-                            ) : (
-                                <div className="upload-placeholder">
-                                <span>No image selected</span>
-                                </div>
-                            )}
-                        </div>
-
-                        <label className="file-upload-label">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                required
-                            />
-                            <div className="upload-area">
-                                {formData.preview ? 'Change Photo' : 'Select Photo'}
+                            <div className="hero-section">
+                                <h1>Исследуйте морских гигантов</h1>
+                                <p className="hero-text">
+                                    Присоединяйтесь к нашему сообществу, чтобы отслеживать наблюдения за китами и
+                                    вносить
+                                    свой вклад в усилия по сохранению морской среды.
+                                </p>
                             </div>
-                        </label>
 
-                        <div className="coordinates-grid">
-                            <div className="input-group">
-                                <label>Latitude</label>
-                                <input
-                                    type="number"
-                                    step="any"
-                                    placeholder="e.g. 34.0522"
-                                    value={formData.latitude}
-                                    onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-                                />
+                            <div className="upload-card">
+                                <h1 className="header-card-main">Форма отправки изображения кита</h1>
+                                <br></br>
+                                {isUploadSuccess ? (
+                                    <div className="success-message">
+                                        <div className="success-icon">✓</div>
+                                        <h3>Изображение успешно загружено</h3>
+                                        <button
+                                            className="upload-another-btn"
+                                            onClick={() => {
+                                                setFormData({...formData, image: null, preview: null});
+                                                setIsUploadSuccess(false);
+                                            }}
+                                        >
+                                            Загрузить ещё
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handleSubmit} className="upload-form">
+                                        <h3 className="header-card">1) Загрузите изображение вашего кита</h3>
+                                        <div className="preview-container">
+                                            {isPreviewLoading ? (
+                                                <div className="loading-spinner"/>
+                                            ) : formData.preview ? (
+                                                <img src={formData.preview} className="preview-image"/>
+                                            ) : (
+                                                <div className="upload-placeholder">
+                                                    <span>Ни одного изображения не выбрано </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <label className="file-upload-label">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                required
+                                            />
+                                            <div className="upload-area">
+                                                <h3>{formData.preview ? 'Изменить изображение' : 'Загрузить изображение'}</h3>
+                                            </div>
+                                        </label>
+
+                                        <h3 className="header-card">2) Выберите локацию, где вы встретили кита на
+                                            карте и укажите доп данные</h3>
+                                        <div className="map-date-container">
+                                            <div className="map-container">
+                                                <MapContainer
+                                                    center={[61, 90]}
+                                                    zoom={1.5}
+                                                    className="selection-map"
+                                                    attributionControl={false}
+                                                >
+                                                    <TileLayer
+                                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                    />
+                                                    <MapClickHandler
+                                                        onMapClick={(lat, lng) => {
+                                                            setFormData({
+                                                                ...formData,
+                                                                latitude: lat.toFixed(6),
+                                                                longitude: lng.toFixed(6)
+                                                            });
+                                                        }}
+                                                    />
+                                                    {formData.latitude && formData.longitude && (
+                                                        <Marker
+                                                            position={[
+                                                                parseFloat(formData.latitude),
+                                                                parseFloat(formData.longitude)
+                                                            ]}
+                                                        />
+                                                    )}
+                                                </MapContainer>
+                                            </div>
+
+                                            <div className="date-input-container">
+                                                <label className="date-label">
+                                                    Выберите дату встречи:
+                                                    <input
+                                                        type="date"
+                                                        value={formData.saw_at}
+                                                        onChange={(e) => setFormData({
+                                                            ...formData,
+                                                            saw_at: e.target.value
+                                                        })}
+                                                        max={new Date().toISOString().split('T')[0]}
+                                                        className="date-input"
+                                                    />
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div className="coordinates-grid">
+                                            <div className="input-group">
+                                                <label>Широта</label>
+                                                <input
+                                                    type="number"
+                                                    step="any"
+                                                    placeholder="e.g. 34.0522"
+                                                    value={formData.latitude}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        latitude: e.target.value
+                                                    })}
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Долгота</label>
+                                                <input
+                                                    type="number"
+                                                    step="any"
+                                                    placeholder="e.g. -118.2437"
+                                                    value={formData.longitude}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        longitude: e.target.value
+                                                    })}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {error && <div className="error-message">{error}</div>}
+                                        <button
+                                            type="submit"
+                                            className="submit-btn"
+                                            disabled={isLoading || !formData.image}
+                                        >
+                                            {isLoading ? (
+                                                <>
+                                                    <div className="button-spinner"/>
+                                                    Загрузка...
+                                                </>
+                                            ) : (
+                                                'Отправить на проверку'
+                                            )}
+                                        </button>
+                                    </form>
+                                )}
                             </div>
-                            <div className="input-group">
-                                <label>Longitude</label>
-                                <input
-                                    type="number"
-                                    step="any"
-                                    placeholder="e.g. -118.2437"
-                                    value={formData.longitude}
-                                    onChange={(e) => setFormData({...formData, longitude: e.target.value})}
-                                />
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="submit-btn"
-                            disabled={loading}
-                        >
-                            {loading ? 'Uploading...' : 'Submit Sighting'}
-                        </button>
-
-                        {error && <div className="error-message">{error}</div>}
-                    </form>
-                </div>
                         </>
-                    } />
-                    <Route path="/catalog" element={<CatalogPage />} />
-                </Routes>
+                    }/>
+                <Route path="/catalog" element={<CatalogPage/>}/>
+            </Routes>
             </main>
 
             {showAuthModal && (
@@ -281,7 +394,7 @@ const App: React.FC = () => {
                 />
             )}
 
-            {showAuthWarning && <AuthWarning />}
+            {showAuthWarning && <AuthWarning/>}
         </div>
         </Router>
     );
@@ -298,7 +411,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
     const [credentials, setCredentials] = useState({
         email: '',
         password: '',
-        username:'',
+        username: '',
         isScientist: false // Новое поле
     });
 
@@ -329,13 +442,13 @@ const AuthModal: React.FC<AuthModalProps> = ({
                         className="auth-input"
                     />
                     {authType === 'register' && (<input
-                        type="username"
-                        placeholder="username"
-                        value={credentials.username}
-                        onChange={(e) => setCredentials({...credentials, username: e.target.value})}
-                        required
-                        className="auth-input"
-                    />
+                            type="username"
+                            placeholder="username"
+                            value={credentials.username}
+                            onChange={(e) => setCredentials({...credentials, username: e.target.value})}
+                            required
+                            className="auth-input"
+                        />
                     )}
                     <input
                         type="password"

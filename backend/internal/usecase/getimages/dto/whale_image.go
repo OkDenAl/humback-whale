@@ -1,9 +1,11 @@
 package dto
 
 import (
-	"github.com/OkDenAl/humback-whale/internal/domain"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
+
+	"github.com/OkDenAl/humback-whale/internal/domain"
 )
 
 type HumpbackWhaleImage struct {
@@ -11,6 +13,7 @@ type HumpbackWhaleImage struct {
 	AuthorID    uuid.UUID `json:"author_id"`
 	Username    string    `json:"username"`
 	CreatedAt   time.Time `json:"created_at"`
+	SawAt       time.Time `json:"saw_at"`
 	Longitude   float64   `json:"longitude"`
 	Latitude    float64   `json:"latitude"`
 	Description string    `json:"description"`
@@ -45,6 +48,7 @@ func NewHumpbackWhaleImage(
 			Description: img.Description,
 			WhaleType:   img.WhaleType,
 			ImageURL:    imageMap[img.ObjectID],
+			SawAt:       img.SawAt,
 		})
 	}
 

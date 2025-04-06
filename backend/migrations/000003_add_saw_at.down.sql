@@ -1,0 +1,1 @@
+ALTER TABLE humpback_whale DROP saw_at;

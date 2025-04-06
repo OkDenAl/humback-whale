@@ -25,6 +25,7 @@ func (uc UC) Handle(ctx context.Context, cmd Command) (string, error) {
 		cmd.Description,
 		cmd.WhaleType,
 		imageInfo.ObjectID,
+		cmd.SawAt,
 	)
 
 	if err = uc.humpbackWhaleRepo.SaveWhale(ctx, whale); err != nil {
