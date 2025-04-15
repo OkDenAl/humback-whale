@@ -1,2 +1,6 @@
 fastapi
 uvicorn
+torch
+torchvision
+requests
+python-multipart

@@ -12,11 +12,11 @@ func (uc UC) Handle(ctx context.Context, cmd Command) (string, error) {
 		return "", err
 	}
 
-	//if err = uc.recognizerRepo.RecognizeWhale(ctx, imageInfo.URL); err != nil {
-	//	deleteError := uc.imageStorageRepo.DeleteImage(ctx, imageInfo.ObjectID.String())
-	//
-	//	return "", errors.Join(err, deleteError)
-	//}
+	if err = uc.recognizerRepo.RecognizeWhale(ctx, imageInfo.URL); err != nil {
+		deleteError := uc.imageStorageRepo.DeleteImage(ctx, imageInfo.ObjectID.String())
+
+		return "", errors.Join(err, deleteError)
+	}
 
 	whale := domain.NewHumpbackWhale(
 		cmd.AuthorID,

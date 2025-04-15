@@ -11,6 +11,7 @@ services:
       POSTGRES_DB: diploma-humpback-whale
     volumes:
       - ${PWD}/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./dbdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks: [backend]
@@ -46,31 +47,6 @@ services:
       - ../frontend/whale-catalog/dist:/usr/share/nginx/html
     ports:
       - "80:80"
-    networks: [ backend ]
-    restart: always
-
-#  humpback-whale:
-#    build: .
-#    container_name: humpback-whale
-#    environment:
-#      POSTGRES_CONN_STRING: ${POSTGRES_CONN_STRING}
-#      MIGRATE_ENDPOINT: ${MIGRATE_ENDPOINT}
-#      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-#      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-#      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
-#    depends_on:
-#      - humpback-whale-postgres
-#      - humpback-whale-minio
-#    ports:
-#      - "8000:8000"
-#    networks: [ backend ]
-#    restart: always
-
-  humpback-whale-ml-recognizer:
-    build: ../ml
-    container_name: humpback-whale-ml-recognizer
-    ports:
-      - "8001:8001"
     networks: [ backend ]
     restart: always
 
