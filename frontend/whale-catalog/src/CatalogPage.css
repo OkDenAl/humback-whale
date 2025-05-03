@@ -2,7 +2,10 @@
     padding: 2rem;
     width: 100%;
     max-width: 1400px;
-    margin: 0 auto;
+}
+
+.leaflet-popup-content p{
+    /* margin: 0em 0em 0em 0em; */ /* Remove this less specific rule */
 }
 
 .image-grid {
@@ -19,11 +22,13 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     overflow: hidden;
     transition: transform 0.2s;
+    position: relative;
 }
 
 .image-card:hover {
     transform: translateY(-5px);
     color: black;
+    background: #e0e0e0;
 }
 
 .image-card img {
@@ -224,36 +229,64 @@
 }
 
 .filters-map-container {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 2rem;
     margin-bottom: 2rem;
+    position: relative;
+    height: 500px;
 }
 
 .filters-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-    background: white;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
     border-radius: var(--border-radius);
     border: 1px solid #ddd;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 401;
+    max-width: 320px;
+    max-height: calc(100% - 30px);
+    overflow-y: auto;
+    transition: transform 0.3s ease-in-out, max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+/* Style for the filter toggle button */
+.filter-toggle-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: var(--primary-blue);
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 402;
+    transition: color 0.2s;
+    font-size: 1.8rem;
+    font-weight: bold;
+    padding: 0 5px;
+    line-height: 1;
+}
+
+.filter-toggle-btn:hover {
+    color: var(--dark-blue);
+}
+
+/* Remove focus outline */
+.filter-toggle-btn:focus {
+    outline: none;
+}
+
+/* Add style for the filter title */
+.filters-form h3 {
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+    text-align: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.filters-form input {
-    padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #efefef;
-    color: black;
-    font-size: 1rem;
-}
-
 .map-container {
-    height: 500px;
-    border-radius: var(--border-radius);
-    border: var(--ocean-blue);
+    height: 100%;
     overflow: hidden;
 }
 
@@ -279,8 +312,28 @@
     padding: 0.8rem;
     border: 2px solid var(--light-blue);
     color: #3a3a3a;
+    background-color: white;
     border-radius: 8px;
     transition: all 0.3s ease;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+/* Add specific styles for select appearance */
+select.filter-input {
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right .9em top 50%;
+  background-size: .75em auto;
+  padding-right: 2.5em;
+}
+
+/* Style for disabled select */
+select.filter-input:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 .filter-input:focus {
@@ -344,14 +397,16 @@
     max-width: 250px;
 }
 
+.leaflet-popup-content {
+    margin: 0em 0em 0em 0em;
+}
+
 .popup-info h3 {
     color: var(--primary-blue);
-    margin: 0.5rem 0;
     font-size: 1.1rem;
 }
 
 .popup-info p {
-    margin: 0.3rem 0;
     font-size: 0.9rem;
     color: black;
 }
@@ -361,14 +416,27 @@
     filter: hue-rotate(90deg);
 }
 
+/* Styles for custom image marker */
+.custom-marker-icon {
+    width: 40px; /* Should match iconSize[0] */
+    height: 40px; /* Should match iconSize[1] */
+    border-radius: 50%; /* Circular shape */
+    overflow: hidden; /* Clip image */
+    border: 2px solid var(--primary-blue); /* Blue border */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4); /* Subtle shadow */
+    background-color: #eee; /* Fallback background */
+}
+
+.custom-marker-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Cover the area */
+}
+
 .cluster-popup {
     max-width: 400px !important;
     max-height: 80vh;
     overflow-y: auto;
-}
-
-.cluster-content {
-    padding: 10px;
 }
 
 .images-scroll {
@@ -401,6 +469,59 @@
     flex: 1;
     font-size: 0.9rem;
     color: var(--dark-gray);
+    display: flex;
+    flex-direction: column;
+    margin: 0em 0em 0em 0em;
+}
+
+/* Style paragraphs inside image-info */
+/* Increase specificity by adding popup context */
+.leaflet-popup-content .image-info p {
+    margin: 0; /* Remove default paragraph margin effectively */
+    line-height: 1.3; /* Adjust line height */
+}
+
+.image-info strong {
+    color: var(--primary-blue);
+    margin: 0em 0em 0em 0em;
+}
+
+.track-btn {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    background-color: var(--ocean-blue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+
+.track-btn:hover {
+    background-color: var(--dark-blue);
+}
+
+.cancel-track-btn {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    background-color: #6c757d; /* Gray background */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+
+.cancel-track-btn:hover {
+    background-color: #5a6268; /* Darker gray on hover */
+}
+
+.track-btn:disabled,
+.cancel-track-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .cluster-count {
@@ -576,4 +697,110 @@
     border-radius: 5px;
     z-index: 1001; /* Ensure it's above modal backdrop but potentially below modal content */
     font-size: 0.9rem;
+}
+
+/* Style for the delete button */
+.delete-btn {
+    position: absolute;
+    top: 5px; /* Adjusted top position */
+    right: 10px; /* Adjusted right position */
+    background-color: transparent; /* No background */
+    color: #ff1a1a; /* Brighter red color for the cross */
+    border: none;
+    font-size: 2.5rem; /* Further increased font size */
+    font-weight: bold;
+    line-height: 1; /* Adjust line height */
+    text-align: center;
+    cursor: pointer;
+    z-index: 5;
+    transition: opacity 0.2s ease-in-out, color 0.2s; /* Added color transition */
+    opacity: 0;
+    padding: 0; /* Remove default padding */
+}
+
+.delete-btn:hover {
+    color: #cc0000; /* Darker shade of the brighter red on hover */
+}
+
+/* Show delete button when hovering over the card */
+.image-card:hover .delete-btn {
+    opacity: 1; /* Make fully visible on card hover */
+}
+
+/* Confirmation Modal Styles (similar to edit modal) */
+.confirmation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(58, 58, 58, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: modalAppear 0.3s ease-out; /* Reuse animation */
+}
+
+.confirmation-modal-content {
+    background: white;
+    color: var(--dark-gray);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--ocean-blue);
+    max-width: 450px; /* Smaller width for confirmation */
+    width: 90%;
+    text-align: center; /* Center text */
+}
+
+.confirmation-modal-content h2 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+}
+
+.confirmation-modal-content p {
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+/* Style for the confirm delete button */
+.confirm-delete-btn {
+    background-color: #dc3545 !important; /* Red color for delete confirmation */
+    color: white !important;
+}
+
+.confirm-delete-btn:hover:not(:disabled) {
+    background-color: #c82333 !important; /* Darker red on hover */
+}
+
+.confirm-delete-btn:disabled {
+    background-color: #bd8288 !important; /* Muted red when disabled */
+    cursor: not-allowed;
+}
+
+/* Styles for the collapsed filter form */
+.filters-form.collapsed {
+    max-height: 70px;
+    padding: 0.5rem;
+    overflow: hidden;
+    transform: none;
+}
+
+.filters-form.collapsed h3 {
+    display: block;
+    margin-bottom: 0;
+    text-align: left;
+    padding-right: 30px;
+}
+
+.filters-form.collapsed .filter-group,
+.filters-form.collapsed .filter-buttons {
+    display: none;
+}
+
+/* Container for action buttons in popup */
+.popup-action-buttons {
+    display: flex;
+    gap: 8px; /* Space between buttons */
+    margin-top: 8px; /* Space above the buttons */
 }
