@@ -151,16 +151,57 @@ body {
 
 .coordinates-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin: 3rem 0;
-  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 0;
 }
 
-.input-group input {
+.coordinates-grid input {
+  padding: .8rem;
+}
+
+/* Apply consistent styling to all inputs within input-group */
+.input-group input,
+.input-group textarea {
   width: 100%;
-  padding: 1rem;
-  font-size: 1.1rem;
+  font-size: 1rem; /* Adjusted font size slightly for consistency */
+  background: white;
+  border: 2px solid var(--primary-blue);
+  color: var(--dark-gray);
+  border-radius: 8px;
+  margin-top: 0.5rem; /* Add some space below label */
+}
+
+.input-group input::placeholder,
+.input-group textarea::placeholder {
+  color: #a0aec0; /* Consistent placeholder color */
+}
+
+.input-group label {
+  display: block; /* Ensure labels are block elements */
+  margin-bottom: 0.25rem; /* Space between label and input */
+  font-weight: 500; /* Slightly bolder labels */
+  color: var(--dark-gray);
+}
+
+/* Specific style adjustments for the description textarea */
+.description-textarea {
+  min-height: 100px; /* Give textarea some default height */
+  resize: vertical; /* Allow vertical resizing */
+  font-family: inherit; /* Ensure font matches inputs */
+  padding: 0.8rem; /* Added padding */
+}
+
+/* Styles for the scientist-only section */
+.scientist-fields {
+  margin-top: 2rem; /* Add space above the scientist section */
+  padding-top: 1.5rem; /* Add space below the section header */
+  border-top: 1px solid #eee; /* Optional separator */
+}
+
+.scientist-fields .header-card {
+    margin-bottom: 1rem; /* Space below the "Дополнительные поля" header */
 }
 
 .submit-btn {
@@ -323,19 +364,23 @@ button{
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Стили для карты и контейнера */
+/* Remove grid layout for map/date container */
 .map-date-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin: 2rem 0;
+  /* display: grid; */ /* No longer a grid */
+  /* grid-template-columns: 1fr 1fr; */
+  /* gap: 2rem; */
+  margin: 2rem 0; /* Keep vertical margin */
 }
 
-.map-container {
-  height: 300px;
+/* Ensure map container takes full width and adjust margins */
+.map-container.full-width-map {
+  height: 300px; /* Or adjust as needed */
+  width: 100%; /* Make map container full width */
   border-radius: var(--border-radius);
   overflow: hidden;
   border: 2px solid var(--primary-blue);
+  margin-top: 2rem; /* Add space above the map */
+  margin-bottom: 0; /* Remove bottom margin as date follows */
 }
 
 .selection-map {
@@ -343,13 +388,13 @@ button{
   width: 100%;
 }
 
-/* Стили для поля даты */
+/* Adjust date input container margins if needed */
 .date-input-container {
-  display: flex;
-  align-items: center;
+  /* Removed grid-related alignment, might need margin adjustments */
   padding: 1rem;
   background: var(--light-blue);
   border-radius: var(--border-radius);
+  margin-top: 2rem; /* Add space above date input (which is now below map) */
 }
 
 .date-label {
@@ -491,4 +536,15 @@ button{
 
 .log-sel{
   color: #007bff;
+}
+
+.user-panel {
+    display: flex;
+    align-items: center;
+}
+
+.username-display {
+    margin-right: 15px; /* Adjust spacing as needed */
+    font-weight: bold; /* Optional: make username bold */
+    color: white; /* Changed color to white */
 }

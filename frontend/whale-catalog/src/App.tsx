@@ -40,6 +40,9 @@ interface FormData {
     latitude: string;
     longitude: string;
     saw_at: string; // Новое поле
+    description: string; // Added description field
+    name: string; // Added name field (for scientists)
+    gender: string; // Added gender field (for scientists)
 }
 
 interface AuthModalProps {
@@ -115,6 +118,9 @@ const App: React.FC = () => {
         latitude: '',
         longitude: '',
         saw_at: '',
+        description: '',
+        name: '',
+        gender: ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -232,6 +238,12 @@ const App: React.FC = () => {
             formData.latitude && formPayload.append('latitude', formData.latitude);
             formData.longitude && formPayload.append('longitude', formData.longitude);
             formData.saw_at && formPayload.append('saw_at', formData.saw_at);
+            formData.description && formPayload.append('description', formData.description);
+
+            if (user && user.is_scientist) {
+                formData.name && formPayload.append('name', formData.name);
+                formData.gender && formPayload.append('gender', formData.gender);
+            }
 
             const response = await fetch(
                 `http://localhost:80/api/v1/private/whale/upload`,
@@ -261,7 +273,10 @@ const App: React.FC = () => {
                 preview: null,
                 latitude: '',
                 longitude: '',
-                saw_at: ''
+                saw_at: '',
+                description: '',
+                name: '',
+                gender: ''
             });
         } catch (err: any) {
             setError(mapBackendErrorToUserMessage(err, err.status || responseStatus));
@@ -313,13 +328,13 @@ const App: React.FC = () => {
                             </>
                         ) : (
                             <div className="user-panel">
+                                <span className="username-display">{user.username}</span>
                                 <button
-                                    className="logout-btn"
+                                    className="auth-btn"
                                     onClick={handleLogout}
                                 >
                                     Выйти
                                 </button>
-                                <span>{user.username}</span>
                             </div>
                         )}
                     </nav>
@@ -358,7 +373,6 @@ const App: React.FC = () => {
                                     </div>
                                 ) : (
                                     <form onSubmit={handleSubmit} className="upload-form">
-                                        <h3 className="header-card">1) Загрузите изображение вашего кита</h3>
                                         <div className="preview-container">
                                             {isPreviewLoading ? (
                                                 <div className="loading-spinner"/>
@@ -383,56 +397,6 @@ const App: React.FC = () => {
                                             </div>
                                         </label>
 
-                                        <h3 className="header-card">2) Выберите локацию, где вы встретили кита на
-                                            карте и укажите доп данные</h3>
-                                        <div className="map-date-container">
-                                            <div className="map-container">
-                                                <MapContainer
-                                                    center={[61, 90]}
-                                                    zoom={1.5}
-                                                    className="selection-map"
-                                                    attributionControl={false}
-                                                >
-                                                    <TileLayer
-                                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                                    />
-                                                    <MapClickHandler
-                                                        onMapClick={(lat, lng) => {
-                                                            setFormData({
-                                                                ...formData,
-                                                                latitude: lat.toFixed(6),
-                                                                longitude: lng.toFixed(6)
-                                                            });
-                                                        }}
-                                                    />
-                                                    {formData.latitude && formData.longitude && (
-                                                        <Marker
-                                                            position={[
-                                                                parseFloat(formData.latitude),
-                                                                parseFloat(formData.longitude)
-                                                            ]}
-                                                        />
-                                                    )}
-                                                </MapContainer>
-                                            </div>
-
-                                            <div className="date-input-container">
-                                                <label className="date-label">
-                                                    Выберите дату встречи:
-                                                    <input
-                                                        type="date"
-                                                        value={formData.saw_at}
-                                                        onChange={(e) => setFormData({
-                                                            ...formData,
-                                                            saw_at: e.target.value
-                                                        })}
-                                                        max={new Date().toISOString().split('T')[0]}
-                                                        className="date-input"
-                                                    />
-                                                </label>
-                                            </div>
-                                        </div>
-
                                         <div className="coordinates-grid">
                                             <div className="input-group">
                                                 <label>Широта</label>
@@ -441,10 +405,7 @@ const App: React.FC = () => {
                                                     step="any"
                                                     placeholder="e.g. 34.0522"
                                                     value={formData.latitude}
-                                                    onChange={(e) => setFormData({
-                                                        ...formData,
-                                                        latitude: e.target.value
-                                                    })}
+                                                    onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
                                                 />
                                             </div>
                                             <div className="input-group">
@@ -454,13 +415,78 @@ const App: React.FC = () => {
                                                     step="any"
                                                     placeholder="e.g. -118.2437"
                                                     value={formData.longitude}
-                                                    onChange={(e) => setFormData({
-                                                        ...formData,
-                                                        longitude: e.target.value
-                                                    })}
+                                                    onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
                                                 />
                                             </div>
                                         </div>
+
+                                        <div className="map-container full-width-map">
+                                            <MapContainer
+                                                center={[61, 90]}
+                                                zoom={1.5}
+                                                className="selection-map"
+                                                attributionControl={false}
+                                            >
+                                                <TileLayer
+                                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                />
+                                                <MapClickHandler
+                                                    onMapClick={(lat, lng) => {
+                                                        setFormData({ ...formData, latitude: lat.toFixed(6), longitude: lng.toFixed(6) });
+                                                    }}
+                                                />
+                                                {formData.latitude && formData.longitude && (
+                                                    <Marker position={[ parseFloat(formData.latitude), parseFloat(formData.longitude) ]} />
+                                                )}
+                                            </MapContainer>
+                                        </div>
+
+                                        <div className="date-input-container">
+                                            <label className="date-label">
+                                                Выберите дату встречи:
+                                                <input
+                                                    type="date"
+                                                    value={formData.saw_at}
+                                                    onChange={(e) => setFormData({ ...formData, saw_at: e.target.value })}
+                                                    max={new Date().toISOString().split('T')[0]}
+                                                    className="date-input"
+                                                />
+                                            </label>
+                                        </div>
+
+                                        <div className="input-group description-group">
+                                            <label>Описание</label>
+                                            <textarea
+                                                placeholder="Добавьте описание к вашей фотографии..."
+                                                value={formData.description}
+                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                className="description-textarea"
+                                            />
+                                        </div>
+
+                                        {(user && user.is_scientist) && (
+                                            <div className="scientist-fields">
+                                                <h4 className="header-card">Дополнительные поля для ученых:</h4>
+                                                <div className="input-group">
+                                                    <label>Имя (необязательно)</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Имя кита, если известно"
+                                                        value={formData.name}
+                                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="input-group">
+                                                    <label>Пол (необязательно)</label>
+                                                    <input
+                                                        type="text" // Consider changing to select if specific genders are expected
+                                                        placeholder="Пол кита, если известен"
+                                                        value={formData.gender}
+                                                        onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {error && <div className="error-message">{error}</div>}
                                         <button
