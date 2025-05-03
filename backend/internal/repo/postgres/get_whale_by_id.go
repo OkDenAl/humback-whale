@@ -26,7 +26,7 @@ func (r Repo) GetWhaleByID(ctx context.Context, id uuid.UUID) (*domain.HumpbackW
 	var view dbview.HumpbackWhaleRecord
 	if err = pgxscan.Get(ctx, r.db, &view, req, args...); err != nil {
 		if pgxscan.NotFound(err) {
-			return nil, errors.WithStack(integrationerror.ErrUserNotFound)
+			return nil, errors.WithStack(integrationerror.ErrHumpbackWhaleNotFound)
 		}
 
 		return nil, errors.Wrap(err, "failed to get humpback whale by id")

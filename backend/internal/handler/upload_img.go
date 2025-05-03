@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/OkDenAl/humback-whale/internal/integrationerror"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -67,10 +68,19 @@ func (h Handler) uploadImg() gin.HandlerFunc {
 		url, err := h.uploadWhaleImageUC.Handle(c, cmd)
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("failed to upload image")
-			c.JSONP(
-				http.StatusInternalServerError,
-				newError(errors.Wrap(err, "failed to upload image"), http.StatusInternalServerError),
-			)
+			switch {
+			case errors.Is(err, integrationerror.ErrRecognizeWhale):
+				c.JSONP(
+					http.StatusUnprocessableEntity,
+					newError(err, http.StatusUnprocessableEntity),
+				)
+			default:
+				c.JSONP(
+					http.StatusInternalServerError,
+					newError(errors.Wrap(err, "failed to upload image"), http.StatusInternalServerError),
+				)
+			}
+
 			return
 		}
 

@@ -34,19 +34,27 @@ func Role(s string) UserRole {
 }
 
 type User struct {
-	ID       uuid.UUID
-	Email    string
-	Username string
-	Password string
-	Role     UserRole
+	ID          uuid.UUID
+	Email       string
+	Username    string
+	Password    string
+	Role        UserRole
+	Degree      string
+	Rank        string
+	PlaceOfWork string
+	IsVerified  bool
 }
 
-func NewUser(email, username, password string, role UserRole) *User {
+func NewUser(email, username, password string, role UserRole, degree, rank, placeOfWork string) *User {
 	return &User{
-		ID:       uuid.New(),
-		Email:    email,
-		Username: username,
-		Password: password,
-		Role:     role,
+		ID:          uuid.New(),
+		Email:       email,
+		Username:    username,
+		Password:    password,
+		Role:        role,
+		Degree:      degree,
+		Rank:        rank,
+		PlaceOfWork: placeOfWork,
+		IsVerified:  false,
 	}
 }

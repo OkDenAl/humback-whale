@@ -10,7 +10,6 @@ import (
 
 	"github.com/OkDenAl/humback-whale/internal/integrationerror"
 	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
-	"github.com/OkDenAl/humback-whale/internal/usecase/getimages/dto"
 	"github.com/OkDenAl/humback-whale/pkg/logger"
 	"github.com/OkDenAl/humback-whale/pkg/ptr"
 )
@@ -19,18 +18,20 @@ import (
 // getImages godoc
 // @Summary get images with filters
 // @Schemes
-// @Description get markup from text
+// @Description get whale images with pagination and filters
 // @Tags Whale
-// @Param limit query int true "Limit"
-// @Param username query string false "Author id"
-// @Param whale_type query string false "Whale type"
-// @Param cursor query time.Time false "Time cursor"
+// @Param limit query int true "Limit per page"
+// @Param cursor query string false "Timestamp cursor (RFC3339Nano format) for pagination"
+// @Param username query string false "Filter by author username"
+// @Param whale_type_id query string false "Filter by whale type id"
+// @Param start_time query string false "Filter by start time (RFC3339Nano format)"
+// @Param end_time query string false "Filter by end time (RFC3339Nano format)"
 // @Produce json
-// @Success 200 {object} getImagesResp
-// @Failure 400 {object} httpError
-// @Failure 404 {object} httpError
-// @Failure 500 {object} httpError
-// @Router /private/whale/images [get]
+// @Success 200 {object} getImagesResp "Successful response with whale images"
+// @Failure 400 {object} httpError "Bad request (invalid parameters)"
+// @Failure 404 {object} httpError "Not found (no images match filters)"
+// @Failure 500 {object} httpError "Internal server error"
+// @Router /public/whale/images [get]
 func (h Handler) getImages() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logger.New()
@@ -49,7 +50,7 @@ func (h Handler) getImages() gin.HandlerFunc {
 			req.Limit,
 			req.Cursor,
 			req.Username,
-			req.WhaleType,
+			req.WhaleTypeID,
 			req.StartTimePeriod,
 			req.EndTimePeriod,
 		)
@@ -103,7 +104,7 @@ func getGetImagesReq(c *gin.Context) (getImagesReq, error) {
 	var cursor time.Time
 	cursorStr := c.Query("cursor")
 	if cursorStr != "" {
-		cursor, err = time.Parse(time.RFC3339, cursorStr)
+		cursor, err = time.Parse(time.RFC3339Nano, cursorStr)
 		if err != nil {
 			return getImagesReq{}, errors.Wrap(err, "failed to parse cursor")
 		}
@@ -117,14 +118,14 @@ func getGetImagesReq(c *gin.Context) (getImagesReq, error) {
 	endTimeStr := c.Query("end_time")
 
 	if startTimeStr != "" && endTimeStr != "" {
-		startTime, err = time.Parse(time.RFC3339, cursorStr)
+		startTime, err = time.Parse(time.RFC3339Nano, startTimeStr)
 		if err != nil {
 			return getImagesReq{}, errors.Wrap(err, "failed to parse start time")
 		}
 
-		endTime, err = time.Parse(time.RFC3339, cursorStr)
+		endTime, err = time.Parse(time.RFC3339Nano, endTimeStr)
 		if err != nil {
-			return getImagesReq{}, errors.Wrap(err, "failed to parse start time")
+			return getImagesReq{}, errors.Wrap(err, "failed to parse end time")
 		}
 	}
 
@@ -136,7 +137,7 @@ func getGetImagesReq(c *gin.Context) (getImagesReq, error) {
 		Limit:           limit,
 		Cursor:          ptr.NilIfZero(cursor),
 		Username:        ptr.NilIfZero(c.Query("username")),
-		WhaleType:       ptr.NilIfZero(c.Query("whale_type")),
+		WhaleTypeID:     ptr.NilIfZero(c.Query("whale_type_id")),
 		StartTimePeriod: ptr.NilIfZero(startTime),
 		EndTimePeriod:   ptr.NilIfZero(endTime),
 	}, nil
@@ -146,13 +147,13 @@ type getImagesReq struct {
 	Limit           int
 	Cursor          *time.Time
 	Username        *string
-	WhaleType       *string
+	WhaleTypeID     *string
 	StartTimePeriod *time.Time
 	EndTimePeriod   *time.Time
 }
 
 type getImagesResp struct {
-	WhaleImgs   []dto.HumpbackWhaleImage `json:"whale_images"`
-	NextPageURL *string                  `json:"next_page_url,omitempty"`
-	PrevPageURL *string                  `json:"prev_page_url,omitempty"`
+	WhaleImgs   []getimages.HumpbackWhaleImage `json:"whale_images"`
+	NextPageURL *string                        `json:"next_page_url,omitempty"`
+	PrevPageURL *string                        `json:"prev_page_url,omitempty"`
 }

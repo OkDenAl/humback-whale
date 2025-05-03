@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/OkDenAl/humback-whale/internal/integrationerror"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -11,17 +12,16 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/OkDenAl/humback-whale/internal/domain"
-	"github.com/OkDenAl/humback-whale/internal/integrationerror"
 	"github.com/OkDenAl/humback-whale/internal/repo/postgres/dbview"
 )
 
-func (r Repo) GetWhalesBeforeCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleType *string) ([]*domain.HumpbackWhale, error) {
+func (r Repo) GetWhalesBeforeCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleTypeID *uuid.UUID) ([]*domain.HumpbackWhale, error) {
 	b := psql.Select(dbview.HumpbackWhaleFields().All()...).From(dbview.HumpbackWhaleTableName)
 	if authorID != nil {
 		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().AuthorID: authorID})
 	}
-	if whaleType != nil {
-		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().WhaleType: whaleType})
+	if whaleTypeID != nil {
+		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().WhaleTypeID: whaleTypeID})
 	}
 	if cursor != nil {
 		b = b.Where(sq.LtOrEq{dbview.HumpbackWhaleFields().CreatedAt: cursor})
@@ -36,23 +36,23 @@ func (r Repo) GetWhalesBeforeCursor(ctx context.Context, limit int, cursor *time
 
 	var view []dbview.HumpbackWhaleRecord
 	if err = pgxscan.Select(ctx, r.db, &view, req, args...); err != nil {
+		if pgxscan.NotFound(err) {
+			return nil, errors.Wrapf(integrationerror.ErrHumpbackWhaleNotFound, "failed to get whale types by ids")
+		}
+
 		return nil, errors.Wrap(err, "failed to get whales images")
-	}
-	// pgxscan.Select does not return any error on empty selection.
-	if len(view) == 0 {
-		return nil, errors.Wrap(integrationerror.ErrHumpbackWhaleNotFound, "failed to get whales images before cursor")
 	}
 
 	return dbview.HumpbackWhaleRecordsToDomain(view), nil
 }
 
-func (r Repo) GetWhalesAfterCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleType *string) ([]*domain.HumpbackWhale, error) {
+func (r Repo) GetWhalesAfterCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleTypeID *uuid.UUID) ([]*domain.HumpbackWhale, error) {
 	b := psql.Select(dbview.HumpbackWhaleFields().All()...).From(dbview.HumpbackWhaleTableName)
 	if authorID != nil {
 		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().AuthorID: authorID})
 	}
-	if whaleType != nil {
-		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().WhaleType: whaleType})
+	if whaleTypeID != nil {
+		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().WhaleTypeID: whaleTypeID})
 	}
 	if cursor != nil {
 		b = b.Where(sq.Gt{dbview.HumpbackWhaleFields().CreatedAt: cursor})
@@ -67,6 +67,10 @@ func (r Repo) GetWhalesAfterCursor(ctx context.Context, limit int, cursor *time.
 
 	var view []dbview.HumpbackWhaleRecord
 	if err = pgxscan.Select(ctx, r.db, &view, req, args...); err != nil {
+		if pgxscan.NotFound(err) {
+			return nil, errors.Wrapf(integrationerror.ErrHumpbackWhaleNotFound, "failed to get whale types by ids")
+		}
+
 		return nil, errors.Wrap(err, "failed to get whales images")
 	}
 

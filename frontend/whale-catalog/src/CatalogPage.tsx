@@ -12,16 +12,27 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+interface WhaleType {
+    id: string; // Assuming the backend also returns the ID within the object
+    whale_type_eng: string;
+    whale_type_rus: string;
+    family: string;
+    genus: string;
+    conservation_status: string;
+}
+
 interface WhaleImage {
     id: string;
     author_id: string;
     username: string;
+    name: string; // Added name field
+    gender: string; // Added gender field
     created_at: string;
     saw_at: string;
     longitude: number;
     latitude: number;
     description: string;
-    whale_type: string;
+    whale_type: WhaleType; // Changed from string to WhaleType object
     image_url: string;
     can_edit?: boolean;
 }
@@ -63,7 +74,7 @@ const processImageUrl = (url: string) => {
 
 const CatalogPage: React.FC = () => {
     const [filters, setFilters] = useState({
-        whale_type: '',
+        whale_type_id: '', // Changed back to filter by whale_type_id
         username: '',
         limit: 10
     });
@@ -75,7 +86,7 @@ const CatalogPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('')
     const [selectedImage, setSelectedImage] = useState<WhaleImage | null>(null);
-    const [editData, setEditData] = useState({ description: '', whale_type: '' });
+    const [editData, setEditData] = useState({ description: '', whale_type_id: '' });
 
 // Проверка прав пользователя
     const isScientist = localStorage.getItem('whaleUser')
@@ -84,7 +95,8 @@ const CatalogPage: React.FC = () => {
 
     const buildQueryString = () => {
         const params = new URLSearchParams();
-        if (filters.whale_type) params.append('whale_type', filters.whale_type);
+        // Filter by whale_type_id
+        if (filters.whale_type_id) params.append('whale_type_id', filters.whale_type_id);
         if (filters.username) params.append('username', filters.username);
         params.append('limit', filters.limit.toString());
         return params.toString();
@@ -94,9 +106,10 @@ const CatalogPage: React.FC = () => {
         console.log(isScientist)
         if (isScientist) {
             setSelectedImage(image);
+            // Set initial editData with whale_type ID
             setEditData({
                 description: image.description,
-                whale_type: image.whale_type
+                whale_type_id: image.whale_type ? image.whale_type.id : '' // Use the ID from the whale_type object
             });
         }
     };
@@ -106,6 +119,12 @@ const CatalogPage: React.FC = () => {
         if (!selectedImage) return;
 
         try {
+            // Construct the update payload, sending description and whale_type ID
+            const updatePayload = {
+                description: editData.description,
+                whale_type: editData.whale_type_id // Backend expects 'whale_type' field with the ID
+            };
+
             const response = await fetch(
                 `http://localhost:80/api/v1/private/whale/update/${selectedImage.id}`,
                 {
@@ -114,16 +133,24 @@ const CatalogPage: React.FC = () => {
                         'Authorization': `Bearer ${JSON.parse(localStorage.getItem('whaleUser')!).token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(editData)
+                    // Send the simplified payload
+                    body: JSON.stringify(updatePayload)
                 }
             );
 
             if (!response.ok) throw new Error('Ошибка сохранения');
 
-            // Обновляем данные в состоянии
+            // Update the image in the state optimistically
             setImages(images.map(img =>
                 img.id === selectedImage.id
-                    ? { ...img, ...editData }
+                    ? {
+                        ...img,
+                        description: editData.description,
+                        // Optimistically update the whale_type ID. The rest of the whale_type
+                        // object in the state might become stale until the next full fetch.
+                        // A better approach might be to fetch updated whale types if the ID changes.
+                        whale_type: { ...img.whale_type, id: editData.whale_type_id }
+                      }
                     : img
             ));
             setSelectedImage(null);
@@ -176,7 +203,7 @@ const CatalogPage: React.FC = () => {
 
     const resetFilters = () => {
         setFilters({
-            whale_type: '',
+            whale_type_id: '', // Reset whale_type_id
             username: '',
             limit: 10
         });
@@ -221,11 +248,11 @@ const CatalogPage: React.FC = () => {
                 {/* Фильтры */}
                 <form onSubmit={handleFilterSubmit} className="filters-form">
                     <div className="filter-group">
-                        <label>Тип кита:</label>
+                        <label>ID Типа кита:</label>
                         <input
                             type="text"
-                            name="whale_type"
-                            value={filters.whale_type}
+                            name="whale_type_id"
+                            value={filters.whale_type_id}
                             onChange={handleFilterChange}
                             className="filter-input"
                         />
@@ -291,8 +318,13 @@ const CatalogPage: React.FC = () => {
                                                             className="popup-image"
                                                         />
                                                         <div className="image-info">
-                                                            {image.whale_type && <div>Type: {image.whale_type}</div>}
-                                                            <div>By: {image.username}</div>
+                                                            {/* Display whale_type_eng or rus in map popup */}
+                                                            {image.whale_type && (image.whale_type.whale_type_eng || image.whale_type.whale_type_rus) ? (
+                                                                <div>Тип: {image.whale_type.whale_type_eng || image.whale_type.whale_type_rus}</div>
+                                                            ) : (
+                                                                <div>Тип: Не определен</div>
+                                                            )}
+                                                            <div>Автор: {image.username}</div>
                                                             <div>{new Date(image.saw_at).toLocaleDateString()}</div>
                                                         </div>
                                                     </div>
@@ -315,7 +347,8 @@ const CatalogPage: React.FC = () => {
             <div className="image-grid">
                 {images.map((image) => (
                     <div
-                        className={`${isScientist ? 'editable' : 'image-card'}`}
+                        key={image.id}
+                        className={`${isScientist ? 'editable image-card' : 'image-card'}`}
                         onClick={() => handleImageClick(image)}
                     >
                         <img
@@ -327,8 +360,27 @@ const CatalogPage: React.FC = () => {
                             }}
                         />
                         <div className="image-meta">
-                            <h3>{image.whale_type || "Неизвестный тип кита"}</h3>
-                            <p className="descr">{image.description || "Без описания"}</p>
+                            {/* Display name if available */}
+                            {image.name && <h2 className="whale-name">Имя: {image.name}</h2>}
+                            {/* Display gender */}
+                            {image.gender && <p className="whale-gender">Пол: {image.gender}</p>}
+
+                            {/* Display Whale Type Details */}
+                            <div className="whale-type-details">
+                                {image.whale_type && image.whale_type.whale_type_eng ? (
+                                    <>
+                                        <h3>Вид: {image.whale_type.whale_type_eng}</h3>
+                                        {image.whale_type.whale_type_rus && <p>Рус: {image.whale_type.whale_type_rus}</p>}
+                                        {image.whale_type.family && <p>Семейство: {image.whale_type.family}</p>}
+                                        {image.whale_type.genus && <p>Род: {image.whale_type.genus}</p>}
+                                        {image.whale_type.conservation_status && <p>Статус: {image.whale_type.conservation_status}</p>}
+                                    </>
+                                ) : (
+                                    <h3>Вид: Не определен</h3>
+                                )}
+                            </div>
+
+                            <p className="descr">Описание: {image.description || "Без описания"}</p>
 
                             <div className="meta-info">
                                 <div className="user-info">
@@ -365,14 +417,15 @@ const CatalogPage: React.FC = () => {
                         />
 
                         <div className="edit-form">
-                            <label>
-                                Тип кита:
-                                <input
-                                    type="text"
-                                    value={editData.whale_type}
-                                    onChange={(e) => setEditData({...editData, whale_type: e.target.value})}
-                                />
-                            </label>
+                            {/*<label>*/}
+                            {/*    ID Типа кита:*/}
+                            {/*    <input*/}
+                            {/*        type="text"*/}
+                            {/*        value={editData.whale_type_id}*/}
+                            {/*        value={editData.whale_type_name}*/}
+                            {/*        onChange={(e) => setEditData({...editData, whale_type_name: e.target.value})}*/}
+                            {/*    />*/}
+                            {/*</label>*/}
 
                             <label>
                                 Описание:

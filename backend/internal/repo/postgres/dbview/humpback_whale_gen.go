@@ -16,8 +16,10 @@ func (view HumpbackWhaleRecord) Vals() []any {
 		view.Longitude,
 		view.Latitude,
 		view.Description,
-		view.WhaleType,
+		view.WhaleTypeID,
 		view.ObjectID,
+		view.WhaleName,
+		view.Gender,
 	}
 }
 
@@ -37,8 +39,10 @@ type HumpbackWhaleFieldsType struct {
 	Longitude   string
 	Latitude    string
 	Description string
-	WhaleType   string
+	WhaleTypeID string
 	ObjectID    string
+	WhaleName   string
+	Gender      string
 }
 
 var humpbackWhaleFields = HumpbackWhaleFieldsType{
@@ -49,8 +53,10 @@ var humpbackWhaleFields = HumpbackWhaleFieldsType{
 	Longitude:   `"longitude"`,
 	Latitude:    `"latitude"`,
 	Description: `"description"`,
-	WhaleType:   `"whale_type"`,
+	WhaleTypeID: `"whale_type_id"`,
 	ObjectID:    `"object_id"`,
+	WhaleName:   `"whale_name"`,
+	Gender:      `"gender"`,
 }
 
 // HumpbackWhaleFields() returns a propperly filled HumpbackWhaleFieldsType object.
@@ -69,7 +75,9 @@ func (HumpbackWhaleFieldsType) All() []string {
 		`"longitude"`,
 		`"latitude"`,
 		`"description"`,
-		`"whale_type"`,
+		`"whale_type_id"`,
 		`"object_id"`,
+		`"whale_name"`,
+		`"gender"`,
 	}
 }

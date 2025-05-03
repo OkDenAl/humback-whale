@@ -14,8 +14,10 @@ type HumpbackWhale struct {
 	Longitude   float64
 	Latitude    float64
 	Description string
-	WhaleType   string
 	ObjectID    uuid.UUID
+	Gender      string
+	WhaleName   string
+	WhaleTypeID uuid.UUID
 }
 
 func NewHumpbackWhale(
@@ -23,9 +25,11 @@ func NewHumpbackWhale(
 	longitude float64,
 	latitude float64,
 	description string,
-	whaleType string,
 	objectID uuid.UUID,
 	sawAt time.Time,
+	gender string,
+	whaleName string,
+	whaleTypeID uuid.UUID,
 ) *HumpbackWhale {
 	now := time.Now()
 
@@ -40,9 +44,11 @@ func NewHumpbackWhale(
 		Longitude:   longitude,
 		Latitude:    latitude,
 		Description: description,
-		WhaleType:   whaleType,
 		ObjectID:    objectID,
 		SawAt:       sawAt,
+		Gender:      gender,
+		WhaleName:   whaleName,
+		WhaleTypeID: whaleTypeID,
 	}
 }
 
@@ -52,8 +58,6 @@ func (h *HumpbackWhale) Describe(description string) {
 	}
 }
 
-func (h *HumpbackWhale) SpecifyWhaleType(whaleType string) {
-	if whaleType != "" {
-		h.WhaleType = whaleType
-	}
+func (h *HumpbackWhale) SpecifyWhaleType(whaleTypeID uuid.UUID) {
+	h.WhaleTypeID = whaleTypeID
 }

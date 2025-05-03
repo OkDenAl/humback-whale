@@ -1,0 +1,5 @@
+ALTER TABLE site_user
+ADD COLUMN degree TEXT,
+ADD COLUMN rank TEXT,
+ADD COLUMN place_of_work TEXT,
+ADD COLUMN is_verified BOOLEAN DEFAULT FALSE;

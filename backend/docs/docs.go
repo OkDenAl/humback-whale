@@ -11,7 +11,7 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "humback-whale",
+            "name": "humpback-whale",
             "url": "https://github.com/OkDenAl/humback-whale"
         },
         "version": "{{.Version}}"
@@ -19,55 +19,21 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/private/whale/images": {
+        "/private/whale/types": {
             "get": {
-                "description": "get markup from text",
+                "description": "Get a list of all available whale types",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Whale"
                 ],
-                "summary": "get images with filters",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Limit",
-                        "name": "limit",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Author id",
-                        "name": "username",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Whale type",
-                        "name": "whale_type",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "authorization bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
+                "summary": "get all whale types",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.getImagesResp"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.httpError"
+                            "$ref": "#/definitions/handler.getWhaleTypesResp"
                         }
                     },
                     "500": {
@@ -160,6 +126,12 @@ const docTemplate = `{
                         "in": "formData"
                     },
                     {
+                        "type": "number",
+                        "description": "Saw at",
+                        "name": "saw_at",
+                        "in": "formData"
+                    },
+                    {
                         "type": "string",
                         "description": "authorization bearer token",
                         "name": "Authorization",
@@ -176,6 +148,64 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/private/whale/{whale_id}": {
+            "delete": {
+                "description": "Deletes a whale image record and the corresponding image file from storage.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Whale"
+                ],
+                "summary": "Delete a whale image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003ctoken\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Whale Image ID (UUID)",
+                        "name": "whale_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Invalid Whale ID format",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Whale image not found",
                         "schema": {
                             "$ref": "#/definitions/handler.httpError"
                         }
@@ -292,10 +322,110 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/public/whale/images": {
+            "get": {
+                "description": "get whale images with pagination and filters",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Whale"
+                ],
+                "summary": "get images with filters",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit per page",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Timestamp cursor (RFC3339Nano format) for pagination",
+                        "name": "cursor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by author username",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by whale type id",
+                        "name": "whale_type_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by start time (RFC3339Nano format)",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by end time (RFC3339Nano format)",
+                        "name": "end_time",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response with whale images",
+                        "schema": {
+                            "$ref": "#/definitions/handler.getImagesResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (invalid parameters)",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found (no images match filters)",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "dto.HumpbackWhaleImage": {
+        "domain.WhaleType": {
+            "type": "object",
+            "properties": {
+                "conservationStatus": {
+                    "type": "string"
+                },
+                "family": {
+                    "type": "string"
+                },
+                "genus": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "speciesEng": {
+                    "type": "string"
+                },
+                "speciesRus": {
+                    "type": "string"
+                }
+            }
+        },
+        "getimages.HumpbackWhaleImage": {
             "type": "object",
             "properties": {
                 "author_id": {
@@ -305,6 +435,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "gender": {
                     "type": "string"
                 },
                 "id": {
@@ -319,10 +452,36 @@ const docTemplate = `{
                 "longitude": {
                     "type": "number"
                 },
+                "name": {
+                    "type": "string"
+                },
+                "saw_at": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
                 },
                 "whale_type": {
+                    "$ref": "#/definitions/getimages.WhaleType"
+                }
+            }
+        },
+        "getimages.WhaleType": {
+            "type": "object",
+            "properties": {
+                "conservation_status": {
+                    "type": "string"
+                },
+                "family": {
+                    "type": "string"
+                },
+                "genus": {
+                    "type": "string"
+                },
+                "whale_type_eng": {
+                    "type": "string"
+                },
+                "whale_type_rus": {
                     "type": "string"
                 }
             }
@@ -339,7 +498,18 @@ const docTemplate = `{
                 "whale_images": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.HumpbackWhaleImage"
+                        "$ref": "#/definitions/getimages.HumpbackWhaleImage"
+                    }
+                }
+            }
+        },
+        "handler.getWhaleTypesResp": {
+            "type": "object",
+            "properties": {
+                "whale_types": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.WhaleType"
                     }
                 }
             }
@@ -369,10 +539,19 @@ const docTemplate = `{
         "handler.reqRegister": {
             "type": "object",
             "properties": {
+                "degree": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                },
+                "place_of_work": {
+                    "type": "string"
+                },
+                "rank": {
                     "type": "string"
                 },
                 "role": {
@@ -411,9 +590,6 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "img_id": {
-                    "type": "string"
-                },
                 "whale_type": {
                     "type": "string"
                 }
@@ -437,7 +613,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Humpback whale recognition service",
-	Description:      "Text markup - it is the service for getting markup from text.",
+	Description:      "Humpback whale recognition - it is the service for recognize humpback whale and store it in catalog.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

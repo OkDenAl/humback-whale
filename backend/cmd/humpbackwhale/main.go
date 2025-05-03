@@ -14,7 +14,9 @@ import (
 	"github.com/OkDenAl/humback-whale/internal/repo/postgres"
 	"github.com/OkDenAl/humback-whale/internal/service/jwtgenerator"
 	"github.com/OkDenAl/humback-whale/internal/usecase/auth"
+	"github.com/OkDenAl/humback-whale/internal/usecase/deletewhaleimg"
 	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
+	"github.com/OkDenAl/humback-whale/internal/usecase/getwhaletypes"
 	"github.com/OkDenAl/humback-whale/internal/usecase/login"
 	"github.com/OkDenAl/humback-whale/internal/usecase/register"
 	"github.com/OkDenAl/humback-whale/internal/usecase/updateimginfo"
@@ -62,12 +64,15 @@ func main() {
 
 	// usecases
 	uploadWhaleImgUC := uploadwhaleimg.NewUC(pgRepo, minioRepo, mlrecognizerRepo)
-	getWhaleImgUC := getimages.NewUC(cfg.GetImagesUC, pgRepo, pgRepo, minioRepo)
+	getWhaleImgUC := getimages.NewUC(cfg.GetImagesUC, pgRepo, pgRepo, minioRepo, pgRepo)
 	updateWhaleImageInfoUC := updateimginfo.NewUC(pgRepo)
 
 	loginUC := login.NewUC(jwtGeneratorService, pgRepo)
 	registerUC := register.NewUC(jwtGeneratorService, pgRepo)
 	authUC := auth.NewUC(jwtGeneratorService)
+
+	getWhaleTypesUC := getwhaletypes.New(pgRepo)
+	deleteWhaleImageUC := deletewhaleimg.New(pgRepo, minioRepo)
 
 	errCh := initAndStartHTTPServer(
 		cfg.HTTP,
@@ -77,6 +82,8 @@ func main() {
 		registerUC,
 		authUC,
 		updateWhaleImageInfoUC,
+		getWhaleTypesUC,
+		deleteWhaleImageUC,
 	)
 
 	printLocalURLS(cfg.HTTP.Port)

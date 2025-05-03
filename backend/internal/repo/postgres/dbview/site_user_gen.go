@@ -14,6 +14,10 @@ func (view UserRecord) Vals() []any {
 		view.Username,
 		view.Password,
 		view.Role,
+		view.Degree,
+		view.Rank,
+		view.PlaceOfWork,
+		view.IsVerified,
 	}
 }
 
@@ -26,19 +30,27 @@ func (view UserRecord) Fields() []string {
 // SiteUserFieldsType struct contains database field names for the view structure.
 // It enables calling database fields in SQL requests.
 type SiteUserFieldsType struct {
-	ID       string
-	Email    string
-	Nickname string
-	Password string
-	Role     string
+	ID          string
+	Email       string
+	Username    string
+	Password    string
+	Role        string
+	Degree      string
+	Rank        string
+	PlaceOfWork string
+	IsVerified  string
 }
 
 var siteUserFields = SiteUserFieldsType{
-	ID:       `"id"`,
-	Email:    `"email"`,
-	Nickname: `"username"`,
-	Password: `"password"`,
-	Role:     `"user_role"`,
+	ID:          `"id"`,
+	Email:       `"email"`,
+	Username:    `"username"`,
+	Password:    `"password"`,
+	Role:        `"user_role"`,
+	Degree:      `"degree"`,
+	Rank:        `"rank"`,
+	PlaceOfWork: `"place_of_work"`,
+	IsVerified:  `"is_verified"`,
 }
 
 // SiteUserFields() returns a propperly filled SiteUserFieldsType object.
@@ -55,5 +67,9 @@ func (SiteUserFieldsType) All() []string {
 		`"username"`,
 		`"password"`,
 		`"user_role"`,
+		`"degree"`,
+		`"rank"`,
+		`"place_of_work"`,
+		`"is_verified"`,
 	}
 }

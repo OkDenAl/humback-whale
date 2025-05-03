@@ -1,18 +1,25 @@
 package register
 
 import (
-	"github.com/OkDenAl/humback-whale/internal/domain"
 	"github.com/pkg/errors"
+	
+	"github.com/OkDenAl/humback-whale/internal/domain"
 )
 
 type Command struct {
-	Email    string
-	Password string
-	Username string
-	Role     domain.UserRole
+	Email       string
+	Password    string
+	Username    string
+	Role        domain.UserRole
+	Degree      string
+	Rank        string
+	PlaceOfWork string
 }
 
-func NewCommand(email, password, username, role string) (Command, error) {
+func NewCommand(
+	email, password, username, role string,
+	degree, rank, placeOfWork string,
+) (Command, error) {
 	if email == "" {
 		return Command{}, errors.Errorf("email is empty")
 	}
@@ -35,9 +42,12 @@ func NewCommand(email, password, username, role string) (Command, error) {
 	}
 
 	return Command{
-		Email:    email,
-		Password: password,
-		Username: username,
-		Role:     r,
+		Email:       email,
+		Password:    password,
+		Username:    username,
+		Role:        r,
+		Degree:      degree,
+		Rank:        rank,
+		PlaceOfWork: placeOfWork,
 	}, nil
 }

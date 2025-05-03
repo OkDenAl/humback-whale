@@ -3,5 +3,5 @@ package integrationerror
 import "github.com/pkg/errors"
 
 var (
-	ErrKek = errors.New("kek") //TODO change to more specific error
+	ErrRecognizeWhale = errors.New("failed to recognize whale")
 )

@@ -16,7 +16,7 @@ func (r Repo) GetUserByUsername(ctx context.Context, username string) (*domain.U
 	req, args, err := psql.Select(dbview.SiteUserFields().All()...).
 		From(dbview.SiteUserTableName).
 		Where(sq.Eq{
-			dbview.SiteUserFields().Nickname: username,
+			dbview.SiteUserFields().Username: username,
 		}).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build query for getting user by username")

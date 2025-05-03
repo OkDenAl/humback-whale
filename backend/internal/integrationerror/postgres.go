@@ -7,4 +7,6 @@ var (
 	ErrUserAlreadyExists = errors.New("user already exists")
 
 	ErrHumpbackWhaleNotFound = errors.New("can't find humpback whale image based on the specified parameters")
+
+	ErrWhaleTypeNotFound = errors.New("can't find humpback whale type based on the specified parameters")
 )

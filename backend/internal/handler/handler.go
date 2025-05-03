@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/OkDenAl/humback-whale/internal/domain"
+	"github.com/OkDenAl/humback-whale/internal/usecase/deletewhaleimg"
 	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
 	"github.com/OkDenAl/humback-whale/internal/usecase/login"
 	"github.com/OkDenAl/humback-whale/internal/usecase/register"
@@ -32,12 +34,22 @@ type iRegisterUC interface {
 	Handle(ctx context.Context, cmd register.Command) (string, error)
 }
 
+type iGetWhaleTypesUC interface {
+	Handle(ctx context.Context) ([]*domain.WhaleType, error)
+}
+
+type iDeleteWhaleImageUC interface {
+	Handle(ctx context.Context, cmd deletewhaleimg.Command) error
+}
+
 type Handler struct {
 	uploadWhaleImageUC     iUploadWhaleImageUC
 	getWhaleImageUC        iGetWhaleImageUC
 	loginUC                iLoginUC
 	registerUC             iRegisterUC
 	updateWhaleImageInfoUC iUpdateWhaleImageInfoUC
+	getWhaleTypesUC        iGetWhaleTypesUC
+	deleteWhaleImageUC     iDeleteWhaleImageUC
 }
 
 func New(
@@ -46,6 +58,8 @@ func New(
 	loginUC iLoginUC,
 	registerUC iRegisterUC,
 	updateWhaleImageInfoUC iUpdateWhaleImageInfoUC,
+	getWhaleTypesUC iGetWhaleTypesUC,
+	deleteWhaleImageUC iDeleteWhaleImageUC,
 ) Handler {
 	return Handler{
 		uploadWhaleImageUC:     uploadWhaleImageUC,
@@ -53,11 +67,17 @@ func New(
 		loginUC:                loginUC,
 		registerUC:             registerUC,
 		updateWhaleImageInfoUC: updateWhaleImageInfoUC,
+		getWhaleTypesUC:        getWhaleTypesUC,
+		deleteWhaleImageUC:     deleteWhaleImageUC,
 	}
 }
 
 func (h Handler) SetPrivateRouter(api *gin.RouterGroup) {
 	api.POST("/whale/upload", h.uploadImg())
+	api.DELETE("/whale/:whale_id", h.deleteWhaleImage())
+	api.GET("/whale/types", h.getWhaleTypes())
+
+	// for scientists only
 	api.PUT("/whale/update/:img_id", h.updateImgInfo())
 }
 

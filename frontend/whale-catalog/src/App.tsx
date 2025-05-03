@@ -46,10 +46,63 @@ interface AuthModalProps {
     authType: 'login' | 'register';
     setAuthType: (type: 'login' | 'register') => void;
     onClose: () => void;
-    onAuth: (credentials: { email: string; password: string; username: string }) => void;
+    onAuth: (credentials: {
+        email: string;
+        password: string;
+        username: string;
+        isScientist: boolean;
+        degree: string;
+        rank: string;
+        placeOfWork: string;
+    }) => void;
     loading: boolean;
     error: string;
 }
+
+// Функция для маппинга ошибок бэкенда в сообщения для пользователя
+const mapBackendErrorToUserMessage = (error: any, status?: number): string => {
+  console.error("Backend Error:", error, "Status:", status); // Логируем ошибку для отладки
+
+  const defaultMessage = "Произошла неизвестная ошибка. Пожалуйста, попробуйте позже.";
+  let message = defaultMessage;
+
+  if (error instanceof Error) {
+    const errorMessage = error.message.toLowerCase();
+
+    if (status === 409 || errorMessage.includes("already exists")) {
+      message = "Пользователь с таким email или именем пользователя уже существует.";
+    } else if (status === 400) {
+      // Можно добавить более специфичные проверки для 400, если бэкенд их предоставляет
+      message = "Ошибка валидации данных. Пожалуйста, проверьте введенные поля.";
+    } else if (status === 422) {
+        // Можно добавить более специфичные проверки для 400, если бэкенд их предоставляет
+        message = "Не удалось распознать горбатого кита на фотографии.";
+      }else if (status === 401 || status === 403 || errorMessage.includes("invalid password")) {
+        // Ошибка для входа
+        message = "Неверный email или пароль.";
+    } else if (status === 500) {
+      message = "Произошла ошибка на сервере. Пожалуйста, попробуйте позже.";
+    } else {
+      // Если есть сообщение от бэкенда, но статус не помог, показываем его (но это менее user-friendly)
+      // message = error.message;
+      // Или оставляем defaultMessage
+    }
+  } else if (typeof error === 'string') {
+    // На случай, если была брошена просто строка
+    if (error.toLowerCase().includes("already exists")) {
+       message = "Пользователь с таким email или именем пользователя уже существует.";
+    } else {
+       message = error; // Показываем строку как есть
+    }
+  }
+
+  // Обработка ошибок сети (offline и т.д.)
+  if (error instanceof TypeError && error.message === "Failed to fetch") {
+      message = "Ошибка сети. Проверьте ваше интернет-соединение.";
+  }
+
+  return message;
+};
 
 const App: React.FC = () => {
     const [showAuthWarning, setShowAuthWarning] = useState(false);
@@ -76,24 +129,66 @@ const App: React.FC = () => {
         }
     }, []);
 
-    const handleAuth = async (credentials: { email: string; password: string; username:string;}) => {
+    const handleAuth = async (credentials: {
+        email: string;
+        password: string;
+        username: string;
+        isScientist: boolean;
+        degree: string;
+        rank: string;
+        placeOfWork: string;
+    }) => {
+        let responseStatus: number | undefined;
         try {
             setLoading(true);
+            setError('');
             const endpoint = authType === 'login' ? 'login' : 'register';
+            const role = credentials.isScientist ? 'scientist' : 'user';
+
+            let requestBody: any = {
+                email: credentials.email,
+                password: credentials.password,
+            };
+
+            if (authType === 'register') {
+                requestBody = {
+                    ...requestBody,
+                    username: credentials.username,
+                    role: role,
+                    ...(credentials.isScientist && {
+                        degree: credentials.degree,
+                        rank: credentials.rank,
+                        place_of_work: credentials.placeOfWork,
+                    })
+                };
+            }
+
             const response = await fetch(`http://localhost:80/api/v1/public/auth/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(credentials),
+                body: JSON.stringify(requestBody),
             });
 
-            if (!response.ok) throw new Error(await response.text());
+            responseStatus = response.status;
+            const responseText = await response.text();
 
-            const data = await response.json() as User;
+            if (!response.ok) {
+                let errorPayload: any = responseText;
+                 try {
+                     errorPayload = JSON.parse(responseText);
+                 } catch (e) { /* Оставляем текст, если не JSON */ }
+
+                 const error = new Error(errorPayload.message || responseText);
+                 (error as any).status = responseStatus;
+                 throw error;
+            }
+
+            const data = JSON.parse(responseText) as User;
             localStorage.setItem('whaleUser', JSON.stringify(data));
             setUser(data);
             setShowAuthModal(false);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Ошибка авторизации');
+        } catch (err: any) {
+            setError(mapBackendErrorToUserMessage(err, err.status || responseStatus));
         } finally {
             setLoading(false);
         }
@@ -126,6 +221,7 @@ const App: React.FC = () => {
 
 
     const handleSubmit = async (e: React.FormEvent) => {
+        let responseStatus: number | undefined;
         e.preventDefault();
         if (!user) return setShowAuthModal(true);
 
@@ -147,12 +243,19 @@ const App: React.FC = () => {
                     body: formPayload
                 }
             );
-            if (response.ok) {
-                setIsUploadSuccess(true);
-            }
+            responseStatus = response.status;
+            const responseText = await response.text();
 
-            if (!response.ok) throw new Error(await response.text());
-
+            if (!response.ok) {
+                 let errorPayload: any = responseText;
+                 try {
+                     errorPayload = JSON.parse(responseText);
+                 } catch (e) { /* Оставляем текст, если не JSON */ }
+                 const error = new Error(errorPayload.message || responseText);
+                 (error as any).status = responseStatus;
+                 throw error;
+             }
+            setIsUploadSuccess(true);
             setFormData({
                 image: null,
                 preview: null,
@@ -160,8 +263,8 @@ const App: React.FC = () => {
                 longitude: '',
                 saw_at: ''
             });
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Ошибка загрузки');
+        } catch (err: any) {
+            setError(mapBackendErrorToUserMessage(err, err.status || responseStatus));
         } finally {
             setIsLoading(false);
         }
@@ -210,13 +313,13 @@ const App: React.FC = () => {
                             </>
                         ) : (
                             <div className="user-panel">
-                                <span>{user.username}</span>
                                 <button
                                     className="logout-btn"
                                     onClick={handleLogout}
                                 >
                                     Выйти
                                 </button>
+                                <span>{user.username}</span>
                             </div>
                         )}
                     </nav>
@@ -412,69 +515,128 @@ const AuthModal: React.FC<AuthModalProps> = ({
         email: '',
         password: '',
         username: '',
-        isScientist: false // Новое поле
+        isScientist: false,
+        degree: '',
+        rank: '',
+        placeOfWork: ''
     });
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value, type, checked } = e.target;
+        setCredentials({
+            ...credentials,
+            [name]: type === 'checkbox' ? checked : value
+        });
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        // Валидация email
         if (!/^\S+@\S+\.\S+$/.test(credentials.email)) {
-            alert('Invalid email');
+            alert('Некорректный email адрес.');
             return;
         }
+        // Валидация длины пароля
         if (credentials.password.length < 6) {
-            alert('Password must be at least 6 characters');
+            alert('Пароль должен содержать не менее 6 символов.');
             return;
         }
+        // Валидация обязательных полей для ученого при регистрации
+        if (authType === 'register' && credentials.isScientist) {
+          if (!credentials.degree || !credentials.rank || !credentials.placeOfWork) {
+            alert('Пожалуйста, заполните все поля для ученого: Ученая степень, Звание, Место работы.');
+            return; // Прерываем отправку
+          }
+        }
+
+        // Если все проверки пройдены
         onAuth(credentials);
     };
 
     return (
         <div className="auth-modal" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <h2>{authType === 'login' ? 'Sign In' : 'Sign Up'}</h2>
+                <h2 className="log-sel">{authType === 'login' ? 'Войти' : 'Зарегистрироваться'}</h2>
                 <form onSubmit={handleSubmit}>
                     <input
                         type="email"
+                        name="email"
                         placeholder="Email"
                         value={credentials.email}
-                        onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+                        onChange={handleInputChange}
                         required
                         className="auth-input"
                     />
-                    {authType === 'register' && (<input
-                            type="username"
-                            placeholder="username"
+                    {authType === 'register' && (
+                        <input
+                            type="text"
+                            name="username"
+                            placeholder="Имя пользователя"
                             value={credentials.username}
-                            onChange={(e) => setCredentials({...credentials, username: e.target.value})}
+                            onChange={handleInputChange}
                             required
                             className="auth-input"
                         />
                     )}
                     <input
                         type="password"
-                        placeholder="Password"
+                        name="password"
+                        placeholder="Пароль"
                         value={credentials.password}
-                        onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                        onChange={handleInputChange}
                         required
-                        minLength={6}
                         className="auth-input"
                     />
 
-                    {/* Добавляем чекбокс для ученых */}
+                    {/* Поля для регистрации */}
                     {authType === 'register' && (
-                        <label className="scientist-checkbox">
-                            <input
-                                type="checkbox"
-                                checked={credentials.isScientist}
-                                onChange={(e) => setCredentials({...credentials, isScientist: e.target.checked})}
-                            />
-                            <span className="checkmark"></span>
-                            I am a scientist
-                        </label>
+                        <>
+                            <div className="role-selection">
+                                <label className="scientist-label">
+                                    <input
+                                        type="checkbox"
+                                        name="isScientist"
+                                        checked={credentials.isScientist}
+                                        onChange={handleInputChange}
+                                    />
+                                    Зарегистрироваться как ученый
+                                </label>
+                            </div>
+
+                            {/* Дополнительные поля для ученых */}
+                            {credentials.isScientist && (
+                                <>
+                                     <input
+                                        type="text"
+                                        name="degree"
+                                        placeholder="Ученая степень"
+                                        value={credentials.degree}
+                                        onChange={handleInputChange}
+                                        className="auth-input"
+                                    />
+                                    <input
+                                        type="text"
+                                        name="rank"
+                                        placeholder="Звание"
+                                        value={credentials.rank}
+                                        onChange={handleInputChange}
+                                        className="auth-input"
+                                    />
+                                     <input
+                                        type="text"
+                                        name="placeOfWork"
+                                        placeholder="Место работы"
+                                        value={credentials.placeOfWork}
+                                        onChange={handleInputChange}
+                                        className="auth-input"
+                                    />
+                                </>
+                            )}
+                        </>
                     )}
 
                     <button type="submit" disabled={loading}>
-                        {loading ? 'Processing...' : authType === 'login' ? 'Sign In' : 'Sign Up'}
+                        {loading ? 'Обработка...' : authType === 'login' ? 'Войти' : 'Зарегистрироваться'}
                     </button>
                 </form>
                 <button
@@ -483,8 +645,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
                     disabled={loading}
                 >
                     {authType === 'login'
-                        ? 'Dont have an account? Sign Up'
-                        : 'Already have an account? Sign In'}
+                        ? 'Нет аккаунта? Зарегистрируйтесь'
+                        : 'Уже есть аккаунт? Войдите'}
                 </button>
                 {error && <div className="error">{error}</div>}
             </div>

@@ -200,7 +200,6 @@ body {
 }
 
 .modal-content input {
-  width: 100%;
   padding: 0.8rem;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -467,4 +466,29 @@ button{
 
 .preview-container.loading::after {
   display: block;
+}
+
+.auth-modal .modal-content {
+  padding: 30px;
+}
+
+.auth-modal .role-selection {
+  margin-bottom: 15px;
+}
+
+.auth-modal .scientist-label {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.auth-modal .scientist-label input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.log-sel{
+  color: #007bff;
 }

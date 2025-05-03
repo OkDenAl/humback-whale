@@ -3,16 +3,17 @@ package getimages
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
-	"github.com/OkDenAl/humback-whale/internal/usecase/getimages/dto"
+	"github.com/OkDenAl/humback-whale/pkg/ptr"
 )
 
 type Query struct {
 	Limit           int
 	Cursor          *time.Time
 	Username        *string
-	WhaleType       *string
+	WhaleTypeID     *uuid.UUID
 	StartTimePeriod *time.Time
 	EndTimePeriod   *time.Time
 }
@@ -21,7 +22,7 @@ func NewQuery(
 	limit int,
 	cursor *time.Time,
 	username *string,
-	whaleType *string,
+	whaleTypeID *string,
 	startTimePeriod *time.Time,
 	endTimePeriod *time.Time,
 ) (Query, error) {
@@ -29,18 +30,28 @@ func NewQuery(
 		return Query{}, errors.Errorf("limit must be greater than 0")
 	}
 
+	var (
+		whaleTypeUUID uuid.UUID
+		err           error
+	)
+	if whaleTypeID != nil {
+		if whaleTypeUUID, err = uuid.Parse(*whaleTypeID); err != nil {
+			return Query{}, errors.Errorf("invalid whale type id")
+		}
+	}
+
 	return Query{
 		Limit:           limit,
 		Cursor:          cursor,
 		Username:        username,
-		WhaleType:       whaleType,
+		WhaleTypeID:     ptr.NilIfZero(whaleTypeUUID),
 		StartTimePeriod: startTimePeriod,
 		EndTimePeriod:   endTimePeriod,
 	}, nil
 }
 
 type QueryResult struct {
-	WhaleImgs   []dto.HumpbackWhaleImage
+	WhaleImgs   []HumpbackWhaleImage
 	NextPageURL *string
 	PrevPageURL *string
 }

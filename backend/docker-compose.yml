@@ -27,7 +27,7 @@ services:
     container_name: humpback-whale-minio
     ports:
       - '9000:9000'
-      - '9001:9001'
+#      - '9001:9001'
     environment:
       # также указываем login & password
       - MINIO_ROOT_USER=minioadmin

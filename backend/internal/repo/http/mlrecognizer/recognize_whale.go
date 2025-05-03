@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
+
+	"github.com/OkDenAl/humback-whale/internal/integrationerror"
 )
 
 type respRecognizeWhale struct {
@@ -56,7 +58,7 @@ func (c Repo) RecognizeWhale(ctx context.Context, url string) error {
 	}
 
 	if resp.Result != "OK" {
-		return errors.Errorf("failed to recognize whale, result: %s", resp.Result)
+		return errors.WithStack(integrationerror.ErrRecognizeWhale)
 	}
 
 	return nil

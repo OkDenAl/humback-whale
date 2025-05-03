@@ -8,10 +8,10 @@ import (
 type Command struct {
 	ImgID       uuid.UUID
 	Description string
-	WhaleType   string
+	WhaleTypeID uuid.UUID
 }
 
-func NewCommand(imgID, description, whaleType string) (Command, error) {
+func NewCommand(imgID, description, whaleTypeID string) (Command, error) {
 	if imgID == "" {
 		return Command{}, errors.Errorf("img id is empty")
 	}
@@ -21,13 +21,21 @@ func NewCommand(imgID, description, whaleType string) (Command, error) {
 		return Command{}, errors.Wrap(err, "failed to parse img id")
 	}
 
-	if description == "" && whaleType == "" {
+	if description == "" && whaleTypeID == "" {
 		return Command{}, errors.Errorf("description and whale type are empty")
+	}
+
+	var whaleTypeUUID uuid.UUID
+	if whaleTypeID != "" {
+		whaleTypeUUID, err = uuid.Parse(imgID)
+		if err != nil {
+			return Command{}, errors.Wrap(err, "failed to parse whale type id")
+		}
 	}
 
 	return Command{
 		ImgID:       imgUUID,
 		Description: description,
-		WhaleType:   whaleType,
+		WhaleTypeID: whaleTypeUUID,
 	}, nil
 }

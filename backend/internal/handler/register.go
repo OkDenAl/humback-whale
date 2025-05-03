@@ -37,7 +37,10 @@ func (h Handler) register() gin.HandlerFunc {
 			return
 		}
 
-		cmd, err := register.NewCommand(req.Email, req.Password, req.Username, req.Role)
+		cmd, err := register.NewCommand(
+			req.Email, req.Password, req.Username, req.Role,
+			req.Degree, req.Rank, req.PlaceOfWork,
+		)
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("failed to validate register request")
 			c.JSON(
@@ -73,10 +76,13 @@ func (h Handler) register() gin.HandlerFunc {
 }
 
 type reqRegister struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	Username    string `json:"username"`
+	Role        string `json:"role"`
+	Degree      string `json:"degree,omitempty"`
+	Rank        string `json:"rank,omitempty"`
+	PlaceOfWork string `json:"place_of_work,omitempty"`
 }
 
 type respRegister struct {

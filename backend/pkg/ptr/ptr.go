@@ -26,3 +26,11 @@ func Deref[T any](v *T) T {
 func Ref[T any](x T) *T {
 	return &x
 }
+
+// FromStringOrNil returns a pointer to the string if it's not empty, otherwise returns nil.
+func FromStringOrNil(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}

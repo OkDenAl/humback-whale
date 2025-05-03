@@ -24,7 +24,7 @@ func (uc UC) Handle(ctx context.Context, cmd Command) (string, error) {
 		return "", err
 	}
 
-	user := domain.NewUser(cmd.Email, cmd.Username, hashed, cmd.Role)
+	user := domain.NewUser(cmd.Email, cmd.Username, hashed, cmd.Role, cmd.Degree, cmd.Rank, cmd.PlaceOfWork)
 
 	if err = uc.userRepo.CreateUser(ctx, user); err != nil {
 		return "", err
