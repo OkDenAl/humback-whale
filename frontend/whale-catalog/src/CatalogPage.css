@@ -35,12 +35,19 @@
 
 /* Стили для контейнера описания */
 .descr {
-    max-height: 50px; /* Фиксированная высота для скролла */
+    max-height: 60px;
     overflow-y: auto;
     padding-right: 10px;
-    margin: 10px 0;
     line-height: 1.4;
     color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.descr strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: var(--dark-gray);
 }
 
 /* Кастомизация скроллбара */
@@ -147,7 +154,47 @@
     background: #ffffff;
     color: black;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
 
+/* Style for the whale name title */
+.whale-name {
+    font-size: 1.3rem;
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+/* Style for the taxonomy box */
+.taxonomy-box {
+    border: 1px solid var(--light-blue);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #f8f9fa; /* Light background for the box */
+}
+
+.taxonomy-box p {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.taxonomy-box p:last-child {
+    margin-bottom: 0;
+}
+
+.taxonomy-box strong {
+    color: var(--dark-gray); /* Slightly darker label */
+}
+
+/* Style for gender paragraph */
+.whale-gender {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.whale-gender strong {
+    color: var(--dark-gray);
 }
 
 .meta-info {
@@ -433,15 +480,28 @@
     color: var(--dark-gray);
 }
 
-.edit-form input, .edit-form textarea {
+/* Apply consistent styles to input, textarea, and select in the modal */
+.edit-form input,
+.edit-form textarea,
+.edit-form select {
     padding: 0.8rem;
     border-radius: 8px;
     border: 2px solid var(--ocean-blue);
     background: #efefef;
     color: black;
     font-size: 1rem;
+    font-family: inherit; /* Ensure consistent font */
 }
 
+/* Add appearance override for select on some browsers */
+.edit-form select {
+  appearance: none; /* Remove default system appearance */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); /* Custom dropdown arrow */
+  background-repeat: no-repeat;
+  background-position: right .7em top 50%;
+  background-size: .65em auto;
+  padding-right: 2.5em; /* Add padding to prevent text overlap with arrow */
+}
 
 .modal-buttons {
     display: flex;
@@ -458,9 +518,18 @@
     font-weight: bold;
 }
 
+.modal-buttons button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
 .modal-buttons button:first-child {
     background: var(--primary-blue);
     color: white;
+}
+
+.modal-buttons button:first-child:disabled {
+     background: #6c757d; /* Different disabled style for primary button */
 }
 
 .modal-buttons button:last-child {
@@ -469,6 +538,42 @@
     border: 2px solid var(--ocean-blue);
 }
 
-.modal-buttons button:last-child:hover {
+.modal-buttons button:last-child:hover:not(:disabled) { /* Apply hover only if not disabled */
     background: #e0e0e0;
+}
+
+/* Styles for error messages within the modal */
+.error-message.modal-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid #f5c6cb;
+    border-radius: .25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-error button {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.1rem;
+    padding: 0 0.5rem;
+    cursor: pointer;
+}
+
+/* Loading indicator style */
+.loading-indicator {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    z-index: 1001; /* Ensure it's above modal backdrop but potentially below modal content */
+    font-size: 0.9rem;
 }

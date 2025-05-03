@@ -59,5 +59,19 @@ func (h *HumpbackWhale) Describe(description string) {
 }
 
 func (h *HumpbackWhale) SpecifyWhaleType(whaleTypeID uuid.UUID) {
-	h.WhaleTypeID = whaleTypeID
+	if whaleTypeID != uuid.Nil {
+		h.WhaleTypeID = whaleTypeID
+	}
+}
+
+func (h *HumpbackWhale) SpecifyName(name string) {
+	if name != "" {
+		h.WhaleName = name
+	}
+}
+
+func (h *HumpbackWhale) SpecifyGender(gender string) {
+	if gender != "" {
+		h.Gender = gender
+	}
 }

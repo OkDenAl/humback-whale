@@ -24,17 +24,19 @@ type HumpbackWhaleImage struct {
 }
 
 type WhaleType struct {
-	WhaleTypeEng       string `json:"whale_type_eng"`
-	WhaleTypeRus       string `json:"whale_type_rus"`
-	Family             string `json:"family"`
-	Genus              string `json:"genus"`
-	ConservationStatus string `json:"conservation_status"`
+	ID                 uuid.UUID `json:"id"`
+	SpeciesEng         string    `json:"species_eng"`
+	SpeciesRus         string    `json:"species_rus"`
+	Family             string    `json:"family"`
+	Genus              string    `json:"genus"`
+	ConservationStatus string    `json:"conservation_status"`
 }
 
 func NewWhaleType(whaleType *domain.WhaleType) WhaleType {
 	return WhaleType{
-		WhaleTypeEng:       whaleType.SpeciesEng,
-		WhaleTypeRus:       whaleType.SpeciesRus,
+		ID:                 whaleType.ID,
+		SpeciesEng:         whaleType.SpeciesEng,
+		SpeciesRus:         whaleType.SpeciesRus,
 		Family:             whaleType.Family,
 		Genus:              whaleType.Genus,
 		ConservationStatus: whaleType.ConservationStatus,

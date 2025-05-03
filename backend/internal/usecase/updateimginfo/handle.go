@@ -12,6 +12,8 @@ func (uc UC) Handle(ctx context.Context, cmd Command) error {
 
 	whale.Describe(cmd.Description)
 	whale.SpecifyWhaleType(cmd.WhaleTypeID)
+	whale.SpecifyName(cmd.Name)
+	whale.SpecifyGender(cmd.Gender)
 
 	return uc.humpbackWhaleRepo.SaveWhale(ctx, whale)
 }

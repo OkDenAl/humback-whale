@@ -171,7 +171,7 @@ func getUploadImageReq(c *gin.Context) (*uploadImgReq, error) {
 		Longitude:   longitude,
 		Latitude:    latitude,
 		Description: c.PostForm("description"),
-		WhaleType:   c.PostForm("whale_type"),
+		WhaleType:   c.PostForm("whale_type_id"),
 		Gender:      c.PostForm("gender"),
 		Name:        c.PostForm("name"),
 		AuthorID:    authorID,

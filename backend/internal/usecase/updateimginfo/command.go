@@ -8,10 +8,12 @@ import (
 type Command struct {
 	ImgID       uuid.UUID
 	Description string
+	Name        string
+	Gender      string
 	WhaleTypeID uuid.UUID
 }
 
-func NewCommand(imgID, description, whaleTypeID string) (Command, error) {
+func NewCommand(imgID, description, whaleTypeID, name, gender string) (Command, error) {
 	if imgID == "" {
 		return Command{}, errors.Errorf("img id is empty")
 	}
@@ -21,13 +23,9 @@ func NewCommand(imgID, description, whaleTypeID string) (Command, error) {
 		return Command{}, errors.Wrap(err, "failed to parse img id")
 	}
 
-	if description == "" && whaleTypeID == "" {
-		return Command{}, errors.Errorf("description and whale type are empty")
-	}
-
 	var whaleTypeUUID uuid.UUID
 	if whaleTypeID != "" {
-		whaleTypeUUID, err = uuid.Parse(imgID)
+		whaleTypeUUID, err = uuid.Parse(whaleTypeID)
 		if err != nil {
 			return Command{}, errors.Wrap(err, "failed to parse whale type id")
 		}
@@ -37,5 +35,7 @@ func NewCommand(imgID, description, whaleTypeID string) (Command, error) {
 		ImgID:       imgUUID,
 		Description: description,
 		WhaleTypeID: whaleTypeUUID,
+		Gender:      gender,
+		Name:        name,
 	}, nil
 }

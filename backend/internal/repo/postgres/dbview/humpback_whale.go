@@ -1,6 +1,7 @@
 package dbview
 
 import (
+	"github.com/OkDenAl/humback-whale/pkg/ptr"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,17 +11,17 @@ import (
 
 //go:generate sqlview -table=humpback_whale
 type HumpbackWhaleRecord struct {
-	ID          uuid.UUID `db:"id"`
-	AuthorID    uuid.UUID `db:"author_id"`
-	CreatedAt   time.Time `db:"created_at"`
-	SawAt       time.Time `db:"saw_at"`
-	Longitude   float64   `db:"longitude"`
-	Latitude    float64   `db:"latitude"`
-	Description string    `db:"description"`
-	WhaleTypeID uuid.UUID `db:"whale_type_id"`
-	ObjectID    uuid.UUID `db:"object_id"`
-	WhaleName   string    `db:"whale_name"`
-	Gender      string    `db:"gender"`
+	ID          uuid.UUID  `db:"id"`
+	AuthorID    uuid.UUID  `db:"author_id"`
+	CreatedAt   time.Time  `db:"created_at"`
+	SawAt       time.Time  `db:"saw_at"`
+	Longitude   float64    `db:"longitude"`
+	Latitude    float64    `db:"latitude"`
+	Description string     `db:"description"`
+	WhaleTypeID *uuid.UUID `db:"whale_type_id"`
+	ObjectID    uuid.UUID  `db:"object_id"`
+	WhaleName   string     `db:"whale_name"`
+	Gender      string     `db:"gender"`
 }
 
 func HumpbackWhaleRecordFromDomain(whale *domain.HumpbackWhale) HumpbackWhaleRecord {
@@ -31,9 +32,11 @@ func HumpbackWhaleRecordFromDomain(whale *domain.HumpbackWhale) HumpbackWhaleRec
 		Longitude:   whale.Longitude,
 		Latitude:    whale.Latitude,
 		Description: whale.Description,
-		WhaleTypeID: whale.WhaleTypeID,
+		WhaleTypeID: ptr.NilIfZero(whale.WhaleTypeID),
 		ObjectID:    whale.ObjectID,
 		SawAt:       whale.SawAt,
+		Gender:      whale.Gender,
+		WhaleName:   whale.WhaleName,
 	}
 }
 
@@ -45,9 +48,11 @@ func HumpbackWhaleRecordToDomain(whale HumpbackWhaleRecord) *domain.HumpbackWhal
 		Longitude:   whale.Longitude,
 		Latitude:    whale.Latitude,
 		Description: whale.Description,
-		WhaleTypeID: whale.WhaleTypeID,
+		WhaleTypeID: ptr.Deref(whale.WhaleTypeID),
 		ObjectID:    whale.ObjectID,
 		SawAt:       whale.SawAt,
+		Gender:      whale.Gender,
+		WhaleName:   whale.WhaleName,
 	}
 }
 

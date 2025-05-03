@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
@@ -23,7 +22,7 @@ func (r Repo) GetWhaleTypesByIDs(ctx context.Context, ids []uuid.UUID) ([]*domai
 	}
 
 	var view []dbview.WhaleTypeRecord
-	if err = pgxscan.Get(ctx, r.db, &view, query, args...); err != nil {
+	if err = pgxscan.Select(ctx, r.db, &view, query, args...); err != nil {
 		if pgxscan.NotFound(err) {
 			return nil, errors.Wrapf(integrationerror.ErrWhaleTypeNotFound, "failed to get whale types by ids")
 		}

@@ -75,7 +75,6 @@ func New(
 func (h Handler) SetPrivateRouter(api *gin.RouterGroup) {
 	api.POST("/whale/upload", h.uploadImg())
 	api.DELETE("/whale/:whale_id", h.deleteWhaleImage())
-	api.GET("/whale/types", h.getWhaleTypes())
 
 	// for scientists only
 	api.PUT("/whale/update/:img_id", h.updateImgInfo())
@@ -86,4 +85,5 @@ func (h Handler) SetPublicRouter(api *gin.RouterGroup) {
 	api.POST("/auth/register", h.register())
 
 	api.GET("/whale/images", h.getImages())
+	api.GET("/whale/types", h.getWhaleTypes())
 }

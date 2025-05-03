@@ -19,7 +19,7 @@ import (
 // @Produce json
 // @Success 200 {object} getWhaleTypesResp
 // @Failure 500 {object} httpError
-// @Router /private/whale/types [get]
+// @Router /public/whale/types [get]
 func (h Handler) getWhaleTypes() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logger.New()

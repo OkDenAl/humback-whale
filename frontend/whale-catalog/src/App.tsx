@@ -34,6 +34,16 @@ interface User {
     is_scientist: boolean; // Добавляем опциональное поле
 }
 
+// Define the WhaleType interface based on backend structure
+interface WhaleType {
+	id: string; // Assuming uuid.UUID maps to string in JSON
+	species_eng: string;
+	species_rus: string;
+	family: string;
+	genus: string;
+	conservation_status: string;
+}
+
 interface FormData {
     image: File | null;
     preview: string | null;
@@ -43,6 +53,7 @@ interface FormData {
     description: string; // Added description field
     name: string; // Added name field (for scientists)
     gender: string; // Added gender field (for scientists)
+    whale_type_id: string; // Added whale type ID field (for scientists)
 }
 
 interface AuthModalProps {
@@ -120,8 +131,12 @@ const App: React.FC = () => {
         saw_at: '',
         description: '',
         name: '',
-        gender: ''
+        gender: '',
+        whale_type_id: '' // Initialize whale type ID
     });
+    const [whaleTypes, setWhaleTypes] = useState<WhaleType[]>([]); // State for whale types
+    const [whaleTypesLoading, setWhaleTypesLoading] = useState<boolean>(false); // Loading state for types
+    const [whaleTypesError, setWhaleTypesError] = useState<string>(''); // Error state for types
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -133,6 +148,38 @@ const App: React.FC = () => {
         if (savedUser) {
             setUser(JSON.parse(savedUser));
         }
+
+        // Fetch whale types when component mounts
+        const fetchWhaleTypes = async () => {
+            setWhaleTypesLoading(true);
+            setWhaleTypesError('');
+            try {
+                // Adjust the endpoint if needed
+                const response = await fetch('http://localhost:80/api/v1/public/whale/types');
+                if (!response.ok) {
+                     const errorText = await response.text();
+                     try {
+                        const errorJson = JSON.parse(errorText);
+                        throw new Error(errorJson.message || `HTTP error! status: ${response.status}`);
+                     } catch(e) {
+                         throw new Error(errorText || `HTTP error! status: ${response.status}`);
+                     }
+                }
+                // Parse the full response object first
+                const responseData = await response.json();
+                // Extract the array from the 'whale_types' property
+                const data: WhaleType[] = responseData.whale_types; 
+                setWhaleTypes(data);
+            } catch (err: any) {
+                console.error("Failed to fetch whale types:", err);
+                setWhaleTypesError(err.message || "Не удалось загрузить виды китов.");
+            } finally {
+                setWhaleTypesLoading(false);
+            }
+        };
+
+        fetchWhaleTypes();
+
     }, []);
 
     const handleAuth = async (credentials: {
@@ -243,6 +290,7 @@ const App: React.FC = () => {
             if (user && user.is_scientist) {
                 formData.name && formPayload.append('name', formData.name);
                 formData.gender && formPayload.append('gender', formData.gender);
+                formData.whale_type_id && formPayload.append('whale_type_id', formData.whale_type_id); // Append whale type ID
             }
 
             const response = await fetch(
@@ -276,8 +324,10 @@ const App: React.FC = () => {
                 saw_at: '',
                 description: '',
                 name: '',
-                gender: ''
+                gender: '',
+                whale_type_id: '' // Reset whale type ID
             });
+            setError(''); // Clear any previous errors on success
         } catch (err: any) {
             setError(mapBackendErrorToUserMessage(err, err.status || responseStatus));
         } finally {
@@ -481,13 +531,32 @@ const App: React.FC = () => {
                                                         name="gender"
                                                         value={formData.gender}
                                                         onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                                        required // Make selection mandatory if needed
                                                     >
-                                                        <option value="" disabled>Выберите пол (если известно)</option>
-                                                        <option value="Мужской">Мужской</option>
-                                                        <option value="Женский">Женский</option>
-                                                        <option value="Детеныш">Детеныш</option>
+                                                        <option value="" disabled>Выберите пол</option>
+                                                        <option value="муж">Мужской</option>
+                                                        <option value="жен">Женский</option>
+                                                        <option value="детеныш">Детеныш</option>
                                                     </select>
+                                                </div>
+                                                {/* New Whale Type Selection Dropdown */}
+                                                <div className="input-group">
+                                                  <label>Вид</label>
+                                                  <select
+                                                    name="whale_type_id"
+                                                    value={formData.whale_type_id}
+                                                    onChange={(e) => setFormData({ ...formData, whale_type_id: e.target.value })}
+                                                    disabled={whaleTypesLoading || !!whaleTypesError} // Disable if loading or error
+                                                  >
+                                                    <option value="" disabled>
+                                                      {whaleTypesLoading ? "Загрузка видов..." : whaleTypesError ? "Ошибка загрузки" : "Выберите вид кита"}
+                                                    </option>
+                                                    {!whaleTypesLoading && !whaleTypesError && whaleTypes.map((type) => (
+                                                      <option key={type.id} value={type.id}>
+                                                        {type.species_rus}
+                                                      </option>
+                                                    ))}
+                                                  </select>
+                                                  {whaleTypesError && <div className="error-message small-error">{whaleTypesError}</div>}
                                                 </div>
                                             </div>
                                         )}

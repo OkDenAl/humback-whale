@@ -44,6 +44,8 @@ func (h Handler) updateImgInfo() gin.HandlerFunc {
 			imgID,
 			req.Description,
 			req.WhaleType,
+			req.Name,
+			req.Gender,
 		)
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("failed to create command for update images info")
@@ -79,4 +81,6 @@ func (h Handler) updateImgInfo() gin.HandlerFunc {
 type updateImageInfoReq struct {
 	Description string `json:"description"`
 	WhaleType   string `json:"whale_type"`
+	Gender      string `json:"gender"`
+	Name        string `json:"name"`
 }
