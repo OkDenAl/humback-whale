@@ -15,9 +15,11 @@ type Command struct {
 	Description string
 	WhaleTypeID uuid.UUID
 	SawAt       time.Time
+	Name        string
+	Gender      string
 }
 
-func NewCommand(img []byte, longitude, latitude float64, description, whaleTypeID, authorID string, sawAt time.Time) (Command, error) {
+func NewCommand(img []byte, longitude, latitude float64, description, whaleTypeID, authorID string, sawAt time.Time, name, gender string) (Command, error) {
 	if authorID == "" {
 		return Command{}, errors.Errorf("author_id is empty")
 	}
@@ -47,5 +49,7 @@ func NewCommand(img []byte, longitude, latitude float64, description, whaleTypeI
 		Description: description,
 		WhaleTypeID: whaleTypeUUID,
 		SawAt:       sawAt,
+		Name:        name,
+		Gender:      gender,
 	}, nil
 }

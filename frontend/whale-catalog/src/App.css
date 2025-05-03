@@ -163,7 +163,8 @@ body {
 
 /* Apply consistent styling to all inputs within input-group */
 .input-group input,
-.input-group textarea {
+.input-group textarea,
+.input-group select {
   width: 100%;
   font-size: 1rem; /* Adjusted font size slightly for consistency */
   background: white;
@@ -171,6 +172,7 @@ body {
   color: var(--dark-gray);
   border-radius: 8px;
   margin-top: 0.5rem; /* Add some space below label */
+  padding: 0.8rem; /* Added consistent padding */
 }
 
 .input-group input::placeholder,
@@ -193,11 +195,19 @@ body {
   padding: 0.8rem; /* Added padding */
 }
 
+/* Adjust margin for the description group */
+.input-group.description-group {
+    margin-top: 1rem; /* Reduced top margin */
+}
+
 /* Styles for the scientist-only section */
 .scientist-fields {
-  margin-top: 2rem; /* Add space above the scientist section */
-  padding-top: 1.5rem; /* Add space below the section header */
-  border-top: 1px solid #eee; /* Optional separator */
+  margin-bottom: 2rem; /* Add space above the scientist section */
+}
+
+/* Add space between input groups in the scientist section */
+.scientist-fields .input-group {
+    margin-bottom: 1rem; /* Adjust value as needed */
 }
 
 .scientist-fields .header-card {
@@ -209,6 +219,7 @@ body {
   margin: 0 auto;
   color: var(--text-primary);
   background-color: var(--ocean-blue);
+  margin-top: 2rem; /* Added top margin */
 }
 
 .auth-modal {

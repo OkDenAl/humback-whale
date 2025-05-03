@@ -466,24 +466,28 @@ const App: React.FC = () => {
 
                                         {(user && user.is_scientist) && (
                                             <div className="scientist-fields">
-                                                <h4 className="header-card">Дополнительные поля для ученых:</h4>
                                                 <div className="input-group">
-                                                    <label>Имя (необязательно)</label>
+                                                    <label>Имя</label>
                                                     <input
                                                         type="text"
-                                                        placeholder="Имя кита, если известно"
+                                                        placeholder="Имя кита"
                                                         value={formData.name}
                                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                     />
                                                 </div>
                                                 <div className="input-group">
-                                                    <label>Пол (необязательно)</label>
-                                                    <input
-                                                        type="text" // Consider changing to select if specific genders are expected
-                                                        placeholder="Пол кита, если известен"
+                                                    <label>Пол </label>
+                                                    <select
+                                                        name="gender"
                                                         value={formData.gender}
                                                         onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                                    />
+                                                        required // Make selection mandatory if needed
+                                                    >
+                                                        <option value="" disabled>Выберите пол (если известно)</option>
+                                                        <option value="Мужской">Мужской</option>
+                                                        <option value="Женский">Женский</option>
+                                                        <option value="Детеныш">Детеныш</option>
+                                                    </select>
                                                 </div>
                                             </div>
                                         )}

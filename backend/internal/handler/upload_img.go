@@ -55,6 +55,8 @@ func (h Handler) uploadImg() gin.HandlerFunc {
 			req.WhaleType,
 			req.AuthorID,
 			req.SawAt,
+			req.Name,
+			req.Gender,
 		)
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("failed to validate request data")
@@ -165,12 +167,15 @@ func getUploadImageReq(c *gin.Context) (*uploadImgReq, error) {
 	}
 
 	return &uploadImgReq{
-		Img:       img,
-		Longitude: longitude,
-		Latitude:  latitude, Description: c.PostForm("description"),
-		WhaleType: c.PostForm("whale_type"),
-		AuthorID:  authorID,
-		SawAt:     sawAt,
+		Img:         img,
+		Longitude:   longitude,
+		Latitude:    latitude,
+		Description: c.PostForm("description"),
+		WhaleType:   c.PostForm("whale_type"),
+		Gender:      c.PostForm("gender"),
+		Name:        c.PostForm("name"),
+		AuthorID:    authorID,
+		SawAt:       sawAt,
 	}, nil
 }
 
@@ -182,6 +187,8 @@ type uploadImgReq struct {
 	Description string
 	WhaleType   string
 	AuthorID    string
+	Name        string
+	Gender      string
 }
 
 type uploadImgResp struct {

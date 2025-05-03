@@ -25,8 +25,8 @@ func (uc UC) Handle(ctx context.Context, cmd Command) (string, error) {
 		cmd.Description,
 		imageInfo.ObjectID,
 		cmd.SawAt,
-		"",
-		"",
+		cmd.Gender,
+		cmd.Name,
 		cmd.WhaleTypeID,
 	)
 
