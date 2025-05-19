@@ -3,6 +3,7 @@ import './App.css';
 import AppIcon from './assets/whale.jpg'; // Импорт иконки
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import CatalogPage from './CatalogPage';
+import AdminPanelPage from './AdminPanelPage'; // Добавляем импорт новой страницы
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet'
@@ -25,7 +26,7 @@ const MapClickHandler = ({ onMapClick }: { onMapClick: (lat: number, lng: number
 };
 
 // Добавим иконку меню для мобильной версии
-import { FaSignInAlt, FaUserPlus } from 'react-icons/fa';
+import { FaSignInAlt, FaUserPlus, FaEnvelope } from 'react-icons/fa';
 
 interface User {
     author_id: string;
@@ -73,49 +74,31 @@ interface AuthModalProps {
     error: string;
 }
 
-// Функция для маппинга ошибок бэкенда в сообщения для пользователя
-const mapBackendErrorToUserMessage = (error: any, status?: number): string => {
-  console.error("Backend Error:", error, "Status:", status); // Логируем ошибку для отладки
-
-  const defaultMessage = "Произошла неизвестная ошибка. Пожалуйста, попробуйте позже.";
-  let message = defaultMessage;
-
-  if (error instanceof Error) {
-    const errorMessage = error.message.toLowerCase();
-
-    if (status === 409 || errorMessage.includes("already exists")) {
-      message = "Пользователь с таким email или именем пользователя уже существует.";
-    } else if (status === 400) {
-      // Можно добавить более специфичные проверки для 400, если бэкенд их предоставляет
-      message = "Ошибка валидации данных. Пожалуйста, проверьте введенные поля.";
-    } else if (status === 422) {
-        // Можно добавить более специфичные проверки для 400, если бэкенд их предоставляет
-        message = "Не удалось распознать горбатого кита на фотографии.";
-      }else if (status === 401 || status === 403 || errorMessage.includes("invalid password")) {
-        // Ошибка для входа
-        message = "Неверный email или пароль.";
-    } else if (status === 500) {
-      message = "Произошла ошибка на сервере. Пожалуйста, попробуйте позже.";
-    } else {
-      // Если есть сообщение от бэкенда, но статус не помог, показываем его (но это менее user-friendly)
-      // message = error.message;
-      // Или оставляем defaultMessage
+const getErrorMessage = (status: number, defaultMessage: string): string => {
+    switch (status) {
+        case 400:
+            return 'Некорректные данные. Пожалуйста, проверьте введенную информацию.';
+        case 401:
+            return 'Необходима авторизация. Пожалуйста, войдите в систему.';
+        case 403:
+            return 'У вас нет прав для выполнения этого действия.';
+        case 404:
+            return 'Запрашиваемый ресурс не найден.';
+        case 409:
+            return 'Пользователь с таким email или именем пользователя уже существует.';
+        case 422:
+            return 'Не удалось распознать горбатого кита на фотографии.';
+        case 500:
+            return 'Внутренняя ошибка сервера. Пожалуйста, попробуйте позже.';
+        case 502:
+            return 'Сервер временно недоступен. Пожалуйста, попробуйте позже.';
+        case 503:
+            return 'Сервис временно недоступен. Пожалуйста, попробуйте позже.';
+        case 504:
+            return 'Превышено время ожидания ответа от сервера. Пожалуйста, попробуйте позже.';
+        default:
+            return defaultMessage;
     }
-  } else if (typeof error === 'string') {
-    // На случай, если была брошена просто строка
-    if (error.toLowerCase().includes("already exists")) {
-       message = "Пользователь с таким email или именем пользователя уже существует.";
-    } else {
-       message = error; // Показываем строку как есть
-    }
-  }
-
-  // Обработка ошибок сети (offline и т.д.)
-  if (error instanceof TypeError && error.message === "Failed to fetch") {
-      message = "Ошибка сети. Проверьте ваше интернет-соединение.";
-  }
-
-  return message;
 };
 
 const App: React.FC = () => {
@@ -134,9 +117,9 @@ const App: React.FC = () => {
         gender: '',
         whale_type_id: '' // Initialize whale type ID
     });
-    const [whaleTypes, setWhaleTypes] = useState<WhaleType[]>([]); // State for whale types
-    const [whaleTypesLoading, setWhaleTypesLoading] = useState<boolean>(false); // Loading state for types
-    const [whaleTypesError, setWhaleTypesError] = useState<string>(''); // Error state for types
+    const [whaleTypes, setWhaleTypes] = useState<WhaleType[]>([]);
+    const [whaleTypesLoading, setWhaleTypesLoading] = useState<boolean>(true);
+    const [whaleTypesError, setWhaleTypesError] = useState<string>('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -154,21 +137,13 @@ const App: React.FC = () => {
             setWhaleTypesLoading(true);
             setWhaleTypesError('');
             try {
-                // Adjust the endpoint if needed
                 const response = await fetch('http://localhost:80/api/v1/public/whale/types');
                 if (!response.ok) {
-                     const errorText = await response.text();
-                     try {
-                        const errorJson = JSON.parse(errorText);
-                        throw new Error(errorJson.message || `HTTP error! status: ${response.status}`);
-                     } catch(e) {
-                         throw new Error(errorText || `HTTP error! status: ${response.status}`);
-                     }
+                    const errorMessage = getErrorMessage(response.status, 'Не удалось загрузить виды китов');
+                    throw new Error(errorMessage);
                 }
-                // Parse the full response object first
                 const responseData = await response.json();
-                // Extract the array from the 'whale_types' property
-                const data: WhaleType[] = responseData.whale_types; 
+                const data: WhaleType[] = responseData.whale_types;
                 setWhaleTypes(data);
             } catch (err: any) {
                 console.error("Failed to fetch whale types:", err);
@@ -191,7 +166,6 @@ const App: React.FC = () => {
         rank: string;
         placeOfWork: string;
     }) => {
-        let responseStatus: number | undefined;
         try {
             setLoading(true);
             setError('');
@@ -222,26 +196,17 @@ const App: React.FC = () => {
                 body: JSON.stringify(requestBody),
             });
 
-            responseStatus = response.status;
-            const responseText = await response.text();
-
             if (!response.ok) {
-                let errorPayload: any = responseText;
-                 try {
-                     errorPayload = JSON.parse(responseText);
-                 } catch (e) { /* Оставляем текст, если не JSON */ }
-
-                 const error = new Error(errorPayload.message || responseText);
-                 (error as any).status = responseStatus;
-                 throw error;
+                const errorMessage = getErrorMessage(response.status, 'Ошибка авторизации');
+                throw new Error(errorMessage);
             }
 
-            const data = JSON.parse(responseText) as User;
+            const data = JSON.parse(await response.text()) as User;
             localStorage.setItem('whaleUser', JSON.stringify(data));
             setUser(data);
             setShowAuthModal(false);
         } catch (err: any) {
-            setError(mapBackendErrorToUserMessage(err, err.status || responseStatus));
+            setError(err.message || 'Произошла ошибка при авторизации');
         } finally {
             setLoading(false);
         }
@@ -274,7 +239,6 @@ const App: React.FC = () => {
 
 
     const handleSubmit = async (e: React.FormEvent) => {
-        let responseStatus: number | undefined;
         e.preventDefault();
         if (!user) return setShowAuthModal(true);
 
@@ -290,7 +254,7 @@ const App: React.FC = () => {
             if (user && user.is_scientist) {
                 formData.name && formPayload.append('name', formData.name);
                 formData.gender && formPayload.append('gender', formData.gender);
-                formData.whale_type_id && formPayload.append('whale_type_id', formData.whale_type_id); // Append whale type ID
+                formData.whale_type_id && formPayload.append('whale_type_id', formData.whale_type_id);
             }
 
             const response = await fetch(
@@ -303,18 +267,12 @@ const App: React.FC = () => {
                     body: formPayload
                 }
             );
-            responseStatus = response.status;
-            const responseText = await response.text();
 
             if (!response.ok) {
-                 let errorPayload: any = responseText;
-                 try {
-                     errorPayload = JSON.parse(responseText);
-                 } catch (e) { /* Оставляем текст, если не JSON */ }
-                 const error = new Error(errorPayload.message || responseText);
-                 (error as any).status = responseStatus;
-                 throw error;
-             }
+                const errorMessage = getErrorMessage(response.status, 'Не удалось загрузить изображение');
+                throw new Error(errorMessage);
+            }
+
             setIsUploadSuccess(true);
             setFormData({
                 image: null,
@@ -325,11 +283,11 @@ const App: React.FC = () => {
                 description: '',
                 name: '',
                 gender: '',
-                whale_type_id: '' // Reset whale type ID
+                whale_type_id: ''
             });
-            setError(''); // Clear any previous errors on success
+            setError('');
         } catch (err: any) {
-            setError(mapBackendErrorToUserMessage(err, err.status || responseStatus));
+            setError(err.message || 'Произошла ошибка при загрузке изображения');
         } finally {
             setIsLoading(false);
         }
@@ -352,6 +310,11 @@ const App: React.FC = () => {
                     <Link to="/catalog" className="link">
                         Каталог
                     </Link>
+                    {user && user.is_scientist && (
+                        <Link to="/admin-panel" className="link">
+                            Панель управления
+                        </Link>
+                    )}
                     <nav className="nav-links">
                         {!user ? (
                             <>
@@ -405,7 +368,7 @@ const App: React.FC = () => {
                             </div>
 
                             <div className="upload-card">
-                                <h1 className="header-card-main">Форма отправки изображения кита</h1>
+                                <h1 className="header-card-main">Форма отправки изображения</h1>
                                 <br></br>
                                 {isUploadSuccess ? (
                                     <div className="success-message">
@@ -582,8 +545,23 @@ const App: React.FC = () => {
                         </>
                     }/>
                 <Route path="/catalog" element={<CatalogPage/>}/>
+                <Route path="/admin-panel" element={
+                    <AdminPanelPage
+                        user={user}
+                        whaleTypes={whaleTypes}
+                        whaleTypesLoading={whaleTypesLoading}
+                        whaleTypesError={whaleTypesError}
+                    />}
+                />
             </Routes>
             </main>
+
+            <footer className="app-footer">
+                <p>
+                    В случае возникновения вопросов? Свяжитесь по <FaEnvelope style={{ verticalAlign: 'middle', marginRight: '5px' }} />
+                    <a href="mailto:okutinda@student.bmstu.ru">okutinda@student.bmstu.ru</a>
+                </p>
+            </footer>
 
             {showAuthModal && (
                 <AuthModal

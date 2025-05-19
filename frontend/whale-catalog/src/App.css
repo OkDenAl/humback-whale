@@ -54,6 +54,12 @@ body {
   font-size: 1.5rem;
   font-weight: 500;
   padding: 1rem 1rem;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.link:hover {
+  color: #cccccc;
 }
 
 .app-icon {
@@ -93,7 +99,7 @@ body {
   padding: 3rem;
   margin: 2rem 0;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
 }
 
 .header-card{
@@ -558,4 +564,37 @@ button{
     margin-right: 15px; /* Adjust spacing as needed */
     font-weight: bold; /* Optional: make username bold */
     color: white; /* Changed color to white */
+}
+
+/* Footer styles - similar to header */
+.app-footer {
+    width: 100%;
+    background: rgba(26, 115, 232, 0.7); /* Semi-transparent background */
+    backdrop-filter: blur(5px); /* Blur effect */
+    color: white;
+    padding: 1rem 0; /* Adjust padding */
+    margin-top: auto; /* Push footer to the bottom */
+    text-align: center;
+    font-size: 0.9rem;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1); /* Shadow on top */
+}
+
+.app-footer p {
+    margin: 0;
+}
+
+.app-footer a {
+    color: #e8f0fe; /* Light blue color for the link */
+    text-decoration: none;
+}
+
+.app-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Ensure the main App container takes full height */
+.App {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }

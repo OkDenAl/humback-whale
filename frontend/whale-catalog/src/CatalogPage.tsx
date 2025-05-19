@@ -72,6 +72,33 @@ const processImageUrl = (url: string) => {
     return processedUrl;
 };
 
+const getErrorMessage = (status: number, defaultMessage: string): string => {
+    switch (status) {
+        case 400:
+            return 'Некорректные данные. Пожалуйста, проверьте введенную информацию.';
+        case 401:
+            return 'Необходима авторизация. Пожалуйста, войдите в систему.';
+        case 403:
+            return 'У вас нет прав для выполнения этого действия.';
+        case 404:
+            return 'Запрашиваемый ресурс не найден.';
+        case 409:
+            return 'Конфликт данных. Пожалуйста, проверьте введенную информацию.';
+        case 422:
+            return 'Не удалось обработать запрос. Пожалуйста, проверьте данные.';
+        case 500:
+            return 'Внутренняя ошибка сервера. Пожалуйста, попробуйте позже.';
+        case 502:
+            return 'Сервер временно недоступен. Пожалуйста, попробуйте позже.';
+        case 503:
+            return 'Сервис временно недоступен. Пожалуйста, попробуйте позже.';
+        case 504:
+            return 'Превышено время ожидания ответа от сервера. Пожалуйста, попробуйте позже.';
+        default:
+            return defaultMessage;
+    }
+};
+
 const CatalogPage: React.FC = () => {
     const [filters, setFilters] = useState({
         whale_type_id: '',
@@ -114,6 +141,9 @@ const CatalogPage: React.FC = () => {
     const isScientist = user?.is_scientist || false;
     const token = user?.token;
 
+    console.log('User:', user);
+    console.log('Is Scientist:', isScientist);
+
     const buildQueryString = () => {
         const params = new URLSearchParams();
         if (filters.whale_type_id) params.append('whale_type_id', filters.whale_type_id);
@@ -131,20 +161,14 @@ const CatalogPage: React.FC = () => {
         try {
             const response = await fetch('http://localhost:80/api/v1/public/whale/types');
             if (!response.ok) {
-                 const errorText = await response.text();
-                 try {
-                    const errorJson = JSON.parse(errorText);
-                    throw new Error(errorJson.message || `HTTP error! status: ${response.status}`);
-                 } catch(e) {
-                     throw new Error(errorText || `HTTP error! status: ${response.status}`);
-                 }
+                const errorMessage = getErrorMessage(response.status, 'Не удалось загрузить виды китов');
+                throw new Error(errorMessage);
             }
             const responseData = await response.json();
             const data: WhaleType[] = responseData.whale_types;
             setWhaleTypes(data);
         } catch (err: any) {
             console.error("Failed to fetch whale types:", err);
-            // Use the main error state for catalog-level errors
             setError(err.message || "Не удалось загрузить виды китов для фильтров.");
         } finally {
             setWhaleTypesLoading(false);
@@ -175,13 +199,12 @@ const CatalogPage: React.FC = () => {
         if (!selectedImage || !token) return;
 
         setSaveLoading(true);
-        setModalError(''); // Clear previous errors
+        setModalError('');
 
         try {
-            // Construct the update payload with all editable fields
             const updatePayload = {
                 description: editData.description,
-                whale_type: editData.whale_type_id, // Send ID as whale_type
+                whale_type: editData.whale_type_id,
                 name: editData.name,
                 gender: editData.gender
             };
@@ -199,33 +222,24 @@ const CatalogPage: React.FC = () => {
             );
 
             if (!response.ok) {
-                const errorText = await response.text();
-                let errorMessage = `Ошибка сохранения: ${response.status}`;
-                try {
-                  const errorJson = JSON.parse(errorText);
-                  errorMessage = errorJson.message || errorText || errorMessage;
-                } catch(e) {
-                  errorMessage = errorText || errorMessage;
-                }
+                const errorMessage = getErrorMessage(response.status, 'Не удалось сохранить изменения');
                 throw new Error(errorMessage);
             }
 
-             // Find the updated whale type object from the state for optimistic update
             const updatedWhaleType = whaleTypes.find(wt => wt.id === editData.whale_type_id) || null;
 
-            // Update the image in the state optimistically
             setImages(images.map(img =>
                 img.id === selectedImage.id
                     ? {
                         ...img,
                         description: editData.description,
-                        whale_type: updatedWhaleType, // Update with the full object or null
+                        whale_type: updatedWhaleType,
                         name: editData.name,
                         gender: editData.gender
                       }
                     : img
             ));
-            setSelectedImage(null); // Close modal on success
+            setSelectedImage(null);
         } catch (err: any) {
             console.error('Ошибка сохранения:', err);
             setModalError(err.message || 'Не удалось сохранить изменения');
@@ -235,31 +249,22 @@ const CatalogPage: React.FC = () => {
     };
 
     const fetchImages = async (url?: string) => {
-        setError(''); // Clear previous page-level errors
+        setError('');
         setLoading(true);
         try {
             url = url || `http://localhost:80/api/v1/public/whale/images?${buildQueryString()}`;
             const response = await fetch(url);
 
             if (!response.ok) {
-                const errorText = await response.text();
-                let errorMessage = `HTTP error! status: ${response.status}`;
-                try {
-                  const errorJson = JSON.parse(errorText);
-                  errorMessage = errorJson.message || errorText || errorMessage;
-                } catch(e) {
-                  errorMessage = errorText || errorMessage;
-                }
-                 throw new Error(errorMessage);
+                const errorMessage = getErrorMessage(response.status, 'Не удалось загрузить изображения');
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
 
-            // Декодируем URL параметры для изображений
             const processedImages = data.whale_images.map((img: WhaleImage) => ({
                 ...img,
                 image_url: processImageUrl(img.image_url),
-                // Ensure whale_type is null if backend sends empty object or similar
                 whale_type: img.whale_type && img.whale_type.id ? img.whale_type : null
             }));
 
@@ -269,8 +274,8 @@ const CatalogPage: React.FC = () => {
                 prev: data.prev_page_url
             });
 
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Error loading images');
+        } catch (err: any) {
+            setError(err.message || 'Ошибка загрузки изображений');
         } finally {
             setLoading(false);
         }
@@ -322,7 +327,7 @@ const CatalogPage: React.FC = () => {
 
     // Function to open delete confirmation modal
     const handleDeleteClick = (e: React.MouseEvent, imageId: string) => {
-        e.stopPropagation(); // Prevent card click event
+        e.stopPropagation(); // Prevent event bubbling
         setImageToDeleteId(imageId);
         setDeleteError(''); // Clear previous delete errors
         setShowDeleteModal(true);
@@ -347,26 +352,17 @@ const CatalogPage: React.FC = () => {
             );
 
             if (!response.ok) {
-                const errorText = await response.text();
-                let errorMessage = `Ошибка удаления: ${response.status}`;
-                 try {
-                   const errorJson = JSON.parse(errorText);
-                   errorMessage = errorJson.message || errorText || errorMessage;
-                 } catch(e) {
-                   errorMessage = errorText || errorMessage;
-                 }
+                const errorMessage = getErrorMessage(response.status, 'Не удалось удалить изображение');
                 throw new Error(errorMessage);
             }
 
-            // Optimistically remove the image from the state
             setImages(prevImages => prevImages.filter(img => img.id !== imageToDeleteId));
             setShowDeleteModal(false);
             setImageToDeleteId(null);
 
         } catch (err: any) {
             console.error('Ошибка удаления:', err);
-            setDeleteError(err.message || 'Не удалось удалить изображение.');
-            // Keep the modal open to show the error
+            setDeleteError(err.message || 'Не удалось удалить изображение');
         } finally {
             setDeleteLoading(false);
         }
@@ -621,8 +617,12 @@ const CatalogPage: React.FC = () => {
                         {isScientist && (
                             <button
                                 className="delete-btn"
-                                onClick={(e) => handleDeleteClick(e, image.id)}
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevent event bubbling
+                                    handleDeleteClick(e, image.id);
+                                }}
                                 title="Удалить изображение"
+                                style={{ display: 'flex' }} // Ensure button is displayed
                             >
                                 ×
                             </button>
@@ -773,8 +773,8 @@ const CatalogPage: React.FC = () => {
 
             {/* Delete Confirmation Modal */}
             {showDeleteModal && (
-                <div className="confirmation-modal">
-                    <div className="confirmation-modal-content">
+                <div className="confirmation-modal1">
+                    <div className="confirmation-modal-content1">
                         <h2>Подтверждение удаления</h2>
                         <p>Вы уверены, что хотите удалить это изображение? Это действие необратимо.</p>
 

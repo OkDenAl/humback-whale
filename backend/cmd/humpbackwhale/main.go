@@ -15,10 +15,12 @@ import (
 	"github.com/OkDenAl/humback-whale/internal/service/jwtgenerator"
 	"github.com/OkDenAl/humback-whale/internal/usecase/auth"
 	"github.com/OkDenAl/humback-whale/internal/usecase/deletewhaleimg"
+	"github.com/OkDenAl/humback-whale/internal/usecase/deletewhaletype"
 	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
 	"github.com/OkDenAl/humback-whale/internal/usecase/getwhaletypes"
 	"github.com/OkDenAl/humback-whale/internal/usecase/login"
 	"github.com/OkDenAl/humback-whale/internal/usecase/register"
+	"github.com/OkDenAl/humback-whale/internal/usecase/savewhaletype"
 	"github.com/OkDenAl/humback-whale/internal/usecase/updateimginfo"
 	"github.com/OkDenAl/humback-whale/internal/usecase/uploadwhaleimg"
 	"github.com/OkDenAl/humback-whale/pkg/logger"
@@ -74,6 +76,9 @@ func main() {
 	getWhaleTypesUC := getwhaletypes.New(pgRepo)
 	deleteWhaleImageUC := deletewhaleimg.New(pgRepo, minioRepo)
 
+	createWhaleTypeUC := savewhaletype.New(pgRepo)
+	deleteWhaleTypeUC := deletewhaletype.New(pgRepo)
+
 	errCh := initAndStartHTTPServer(
 		cfg.HTTP,
 		uploadWhaleImgUC,
@@ -84,6 +89,8 @@ func main() {
 		updateWhaleImageInfoUC,
 		getWhaleTypesUC,
 		deleteWhaleImageUC,
+		createWhaleTypeUC,
+		deleteWhaleTypeUC,
 	)
 
 	printLocalURLS(cfg.HTTP.Port)

@@ -10,3 +10,22 @@ type WhaleType struct {
 	Genus              string    `json:"genus"`
 	ConservationStatus string    `json:"conservation_status"`
 }
+
+func NewWhaleType(speciesEng, speciesRus, family, genus, consStatus string) *WhaleType {
+	return &WhaleType{
+		ID:                 uuid.New(),
+		SpeciesEng:         speciesEng,
+		SpeciesRus:         speciesRus,
+		Family:             family,
+		Genus:              genus,
+		ConservationStatus: consStatus,
+	}
+}
+
+func (w *WhaleType) Recreate(speciesEng, speciesRus, family, genus, consStatus string) {
+	w.SpeciesEng = speciesEng
+	w.SpeciesRus = speciesRus
+	w.Family = family
+	w.Genus = genus
+	w.ConservationStatus = consStatus
+}

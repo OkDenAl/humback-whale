@@ -17,10 +17,12 @@ import (
 	"github.com/OkDenAl/humback-whale/internal/handler/middleware"
 	"github.com/OkDenAl/humback-whale/internal/usecase/auth"
 	"github.com/OkDenAl/humback-whale/internal/usecase/deletewhaleimg"
+	"github.com/OkDenAl/humback-whale/internal/usecase/deletewhaletype"
 	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
 	"github.com/OkDenAl/humback-whale/internal/usecase/getwhaletypes"
 	"github.com/OkDenAl/humback-whale/internal/usecase/login"
 	"github.com/OkDenAl/humback-whale/internal/usecase/register"
+	"github.com/OkDenAl/humback-whale/internal/usecase/savewhaletype"
 	"github.com/OkDenAl/humback-whale/internal/usecase/updateimginfo"
 	"github.com/OkDenAl/humback-whale/internal/usecase/uploadwhaleimg"
 	"github.com/OkDenAl/humback-whale/pkg/logger"
@@ -54,7 +56,9 @@ func initAndStartHTTPServer(
 	authUC *auth.UC,
 	updateWhaleImageInfoUC *updateimginfo.UC,
 	getWhaleTypesUC *getwhaletypes.UC,
-	deleteWhaleImageUC *deletewhaleimg.UseCase,
+	deleteWhaleImageUC *deletewhaleimg.UC,
+	saveWhaleTypesUC *savewhaletype.UC,
+	deleteWhaleTypesUC *deletewhaletype.UC,
 ) <-chan error {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
@@ -71,6 +75,8 @@ func initAndStartHTTPServer(
 		updateWhaleImageInfoUC,
 		getWhaleTypesUC,
 		deleteWhaleImageUC,
+		saveWhaleTypesUC,
+		deleteWhaleTypesUC,
 	)
 
 	publicApi := engine.Group("api/v1/public")

@@ -23,6 +23,7 @@ import (
 // @Success 200 {object} respLogin
 // @Success 400 {object} httpError
 // @Success 404 {object} httpError
+// @Failure 401 {object} httpError
 // @Failure 500 {object} httpError
 // @Router /public/auth/login [post]
 func (h Handler) login() gin.HandlerFunc {

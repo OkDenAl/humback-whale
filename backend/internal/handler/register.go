@@ -20,6 +20,7 @@ import (
 // @Param   text body reqRegister  true  "JSON"
 // @Success 200 {object} respRegister
 // @Failure 400 {object} httpError
+// @Failure 401 {object} httpError
 // @Failure 409 {object} httpError
 // @Failure 500 {object} httpError
 // @Router /public/auth/register [post]

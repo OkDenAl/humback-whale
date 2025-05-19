@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"github.com/OkDenAl/humback-whale/internal/domain"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 
+	"github.com/OkDenAl/humback-whale/internal/usecase/getwhaletypes"
 	"github.com/OkDenAl/humback-whale/pkg/logger"
 )
 
@@ -42,5 +42,5 @@ func (h Handler) getWhaleTypes() gin.HandlerFunc {
 
 // getWhaleTypesResp defines the structure for the response.
 type getWhaleTypesResp struct {
-	WhaleTypes []*domain.WhaleType `json:"whale_types"`
+	WhaleTypes []*getwhaletypes.WhaleType `json:"whale_types"`
 }

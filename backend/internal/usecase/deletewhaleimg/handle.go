@@ -10,7 +10,7 @@ import (
 )
 
 // Handle executes the use case logic.
-func (uc *UseCase) Handle(ctx context.Context, cmd Command) error {
+func (uc *UC) Handle(ctx context.Context, cmd Command) error {
 	whale, err := uc.whaleRepo.GetWhaleByID(ctx, cmd.WhaleID)
 	if err != nil {
 		if errors.Is(err, integrationerror.ErrHumpbackWhaleNotFound) {

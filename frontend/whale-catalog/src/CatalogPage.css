@@ -20,7 +20,7 @@
     border-radius: var(--border-radius);
     border: 2px solid var(--ocean-blue);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    overflow: hidden;
+    overflow: visible;
     transition: transform 0.2s;
     position: relative;
 }
@@ -702,33 +702,44 @@ select.filter-input:disabled {
 /* Style for the delete button */
 .delete-btn {
     position: absolute;
-    top: 5px; /* Adjusted top position */
-    right: 10px; /* Adjusted right position */
-    background-color: transparent; /* No background */
-    color: #ff1a1a; /* Brighter red color for the cross */
+    top: 10px;
+    right: 10px;
+    background: none;
+    color: #ff1a1a;
     border: none;
-    font-size: 2.5rem; /* Further increased font size */
+    font-size: 2.5rem;
     font-weight: bold;
-    line-height: 1; /* Adjust line height */
+    line-height: 1;
     text-align: center;
     cursor: pointer;
-    z-index: 5;
-    transition: opacity 0.2s ease-in-out, color 0.2s; /* Added color transition */
+    z-index: 10;
+    transition: all 0.2s ease-in-out;
     opacity: 0;
-    padding: 0; /* Remove default padding */
+    padding: 0;
+    width: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .delete-btn:hover {
-    color: #cc0000; /* Darker shade of the brighter red on hover */
+    color: #ff0000;
+    transform: scale(1.1);
 }
 
 /* Show delete button when hovering over the card */
 .image-card:hover .delete-btn {
-    opacity: 1; /* Make fully visible on card hover */
+    opacity: 1;
 }
 
-/* Confirmation Modal Styles (similar to edit modal) */
-.confirmation-modal {
+/* Ensure the image card has relative positioning for absolute positioning of delete button */
+.image-card {
+    position: relative;
+}
+
+/* Confirmation Modal Styles */
+.confirmation-modal1 {
     position: fixed;
     top: 0;
     left: 0;
@@ -739,43 +750,65 @@ select.filter-input:disabled {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: modalAppear 0.3s ease-out; /* Reuse animation */
 }
 
-.confirmation-modal-content {
+.confirmation-modal-content1 {
     background: white;
     color: var(--dark-gray);
     padding: 2rem;
     border-radius: var(--border-radius);
     border: 2px solid var(--ocean-blue);
-    max-width: 450px; /* Smaller width for confirmation */
+    max-width: 450px !important; /* Override any other max-width */
     width: 90%;
-    text-align: center; /* Center text */
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.confirmation-modal-content h2 {
+.confirmation-modal-content1 h2 {
     color: var(--primary-blue);
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
 }
 
-.confirmation-modal-content p {
-    margin-bottom: 1.5rem;
+.confirmation-modal-content1 p {
+    margin-bottom: 2rem;
     line-height: 1.5;
+    color: var(--dark-gray);
 }
 
 /* Style for the confirm delete button */
 .confirm-delete-btn {
-    background-color: #dc3545 !important; /* Red color for delete confirmation */
+    background-color: #dc3545 !important;
     color: white !important;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .confirm-delete-btn:hover:not(:disabled) {
-    background-color: #c82333 !important; /* Darker red on hover */
+    background-color: #c82333 !important;
+    transform: translateY(-2px);
 }
 
 .confirm-delete-btn:disabled {
-    background-color: #bd8288 !important; /* Muted red when disabled */
+    background-color: #bd8288 !important;
     cursor: not-allowed;
+}
+
+/* Animation for modal appearance */
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 /* Styles for the collapsed filter form */

@@ -30,6 +30,7 @@ import (
 // @Success 200 {object} getImagesResp "Successful response with whale images"
 // @Failure 400 {object} httpError "Bad request (invalid parameters)"
 // @Failure 404 {object} httpError "Not found (no images match filters)"
+// @Failure 401 {object} httpError
 // @Failure 500 {object} httpError "Internal server error"
 // @Router /public/whale/images [get]
 func (h Handler) getImages() gin.HandlerFunc {

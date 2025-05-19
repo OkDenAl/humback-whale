@@ -1,0 +1,315 @@
+.admin-panel-page {
+    padding: 2rem;
+    width: 100%;
+    min-height: calc(100vh - 200px);
+    display: flex;
+    justify-content: center;
+}
+
+.admin-content {
+    width: 100%;
+    max-width: 1400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 3rem;
+    margin: 2rem 0;
+}
+
+.admin-panel-header {
+    margin-bottom: 2rem;
+}
+
+.admin-panel-header h1 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.admin-nav-menu {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 2px solid var(--light-blue);
+    margin-bottom: 2rem;
+}
+
+.admin-nav-item {
+    padding: 0.8rem 1.5rem;
+    color: var(--dark-gray);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.admin-nav-item:hover {
+    background-color: var(--light-blue);
+    color: var(--ocean-blue);
+}
+
+.admin-nav-item.active {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.access-denied {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.loading-message {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.error-message {
+    padding: 20px;
+    text-align: center;
+    color: red;
+}
+
+.whale-types-table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.whale-types-table th {
+    border-bottom: 2px solid var(--primary-blue);
+    padding: 12px 15px;
+    text-align: left;
+    background-color: var(--light-blue);
+    color: var(--ocean-blue);
+    font-weight: 600;
+}
+
+.whale-types-table td {
+    border-bottom: 1px solid #eee;
+    padding: 10px 15px;
+    text-align: left;
+    color: var(--dark-gray);
+}
+
+.whale-types-table tr:hover {
+    background-color: var(--light-blue);
+    transition: background-color 0.2s ease;
+}
+
+.no-data-message {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 20px;
+}
+
+.whale-types-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.add-whale-type-btn {
+    padding: 0.8rem 1.5rem;
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.add-whale-type-btn:hover {
+    background-color: var(--dark-blue);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(58, 58, 58, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-content h2 {
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+}
+
+.new-whale-type-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    color: var(--dark-gray);
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.8rem;
+    border: 2px solid var(--light-blue);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--dark-gray);
+    background: #efefef;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary-blue);
+    outline: none;
+    background: white;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.submit-btn,
+.cancel-btn {
+    flex: 1;
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+    text-align: center;
+}
+
+.submit-btn {
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background-color: var(--dark-blue);
+}
+
+.cancel-btn {
+    background-color: #f0f0f0;
+    color: var(--dark-gray);
+    border: 2px solid var(--ocean-blue);
+}
+
+.cancel-btn:hover:not(:disabled) {
+    background-color: #e0e0e0;
+}
+
+.submit-btn:disabled,
+.cancel-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.action-buttons,
+.edit-btn,
+.delete-btn {
+    display: none;
+}
+
+.whale-type-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.whale-type-row:hover {
+    background-color: var(--light-blue);
+}
+
+.delete-row-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.delete-row-btn:hover {
+    background-color: #c82333;
+}
+
+.add-whale-type-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--light-blue);
+}
+
+.confirmation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(58, 58, 58, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.confirmation-modal-content {
+    background: white;
+    color: var(--dark-gray);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--ocean-blue);
+    max-width: 450px !important; /* Override any other max-width */
+    width: 90%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.confirmation-modal-content h2 {
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.confirmation-modal-content p {
+    margin-bottom: 2rem;
+    line-height: 1.5;
+    color: var(--dark-gray);
+}

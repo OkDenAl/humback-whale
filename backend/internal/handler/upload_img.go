@@ -31,6 +31,8 @@ import (
 // @Produce json
 // @Success 200 {object} uploadImgResp
 // @Failure 400 {object} httpError
+// @Failure 422 {object} httpError
+// @Failure 401 {object} httpError
 // @Failure 500 {object} httpError
 // @Router /private/whale/upload [post]
 func (h Handler) uploadImg() gin.HandlerFunc {
@@ -112,7 +114,6 @@ func getDataFromFile(inputFile *multipart.FileHeader) ([]byte, error) {
 
 func checkFileExtension(data []byte) error {
 	var allowed = []string{
-		"image/png",
 		"image/jpeg",
 	}
 

@@ -10,7 +10,7 @@ import (
 	"github.com/OkDenAl/humback-whale/pkg/sqlex"
 )
 
-func (r Repo) CreateWhaleType(ctx context.Context, whaleType *domain.WhaleType) error {
+func (r Repo) SaveWhaleType(ctx context.Context, whaleType *domain.WhaleType) error {
 	view := dbview.WhaleTypeRecordFromDomain(whaleType)
 
 	req, args, err := psql.Insert(dbview.WhaleTypeTableName).

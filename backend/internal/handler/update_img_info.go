@@ -22,6 +22,8 @@ import (
 // @Produce json
 // @Success 200
 // @Failure 400 {object} httpError
+// @Failure 404 {object} httpError
+// @Failure 401 {object} httpError
 // @Failure 500 {object} httpError
 // @Router /private/whale/update [post]
 func (h Handler) updateImgInfo() gin.HandlerFunc {
