@@ -3,6 +3,7 @@ import './CatalogPage.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 
 // Фикс для иконок маркеров
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -36,22 +37,6 @@ interface WhaleImage {
     image_url: string;
     can_edit?: boolean;
 }
-
-interface GroupedImages {
-    [key: string]: WhaleImage[];
-}
-
-const groupImagesByLocation = (images: WhaleImage[]): GroupedImages => {
-    return images.reduce((acc, image) => {
-        if (image.latitude && image.longitude) {
-            // Округляем координаты до 4 знаков для группировки
-            const key = `${image.latitude.toFixed(4)},${image.longitude.toFixed(4)}`;
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(image);
-        }
-        return acc;
-    }, {} as GroupedImages);
-};
 
 const processImageUrl = (url: string) => {
     // Декодируем URL и заменяем экранированные символы
@@ -99,6 +84,22 @@ const getErrorMessage = (status: number, defaultMessage: string): string => {
     }
 };
 
+// Add type for cluster click event
+interface ClusterClickEvent {
+    layer: {
+        getBounds: () => L.LatLngBounds;
+    };
+    target: {
+        _map: L.Map;
+    };
+}
+
+// Add type for cluster
+interface CustomMarkerCluster {
+    getChildCount: () => number;
+    getAllChildMarkers: () => L.Marker[];
+}
+
 const CatalogPage: React.FC = () => {
     const [filters, setFilters] = useState({
         whale_type_id: '',
@@ -135,6 +136,60 @@ const CatalogPage: React.FC = () => {
         name: '',
         gender: ''
     });
+
+    // Add new state for cluster zoom level
+    const [clusterZoom, setClusterZoom] = useState<number>(1.5);
+
+    // Add constant for zoom level when expanding clusters
+    const EXPANDED_ZOOM_LEVEL = 8;
+
+    // Function to calculate distance between two points
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+        const R = 6371; // Earth's radius in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    };
+
+    // Function to group nearby images
+    const groupNearbyImages = (images: WhaleImage[], maxDistance: number = 0.5) => {
+        const groups: { [key: string]: WhaleImage[] } = {};
+        
+        images.forEach(image => {
+            if (!image.latitude || !image.longitude) return;
+            
+            let addedToGroup = false;
+            
+            // Check if image belongs to any existing group
+            Object.keys(groups).forEach(groupKey => {
+                const [groupLat, groupLon] = groupKey.split(',').map(Number);
+                const distance = calculateDistance(
+                    image.latitude,
+                    image.longitude,
+                    groupLat,
+                    groupLon
+                );
+                
+                if (distance <= maxDistance) {
+                    groups[groupKey].push(image);
+                    addedToGroup = true;
+                }
+            });
+            
+            // If image doesn't belong to any group, create new group
+            if (!addedToGroup) {
+                const key = `${image.latitude},${image.longitude}`;
+                groups[key] = [image];
+            }
+        });
+        
+        return groups;
+    };
 
 // Проверка прав пользователя
     const user = localStorage.getItem('whaleUser') ? JSON.parse(localStorage.getItem('whaleUser')!) : null;
@@ -527,7 +582,7 @@ const CatalogPage: React.FC = () => {
                 <div className="map-container">
                     <MapContainer
                         center={[61, 90]}
-                        zoom={1.5}
+                        zoom={clusterZoom}
                         className="leaflet-map"
                         style={{ border: '2px solid var(--primary-blue)', borderRadius: '8px' }}
                         attributionControl={false}
@@ -535,78 +590,131 @@ const CatalogPage: React.FC = () => {
                         <TileLayer
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
-                        {Object.entries(groupImagesByLocation(images)).map(([key, group]) => {
-                            const [lat, lng] = key.split(',').map(Number);
-                            const firstImage = group[0];
+                        <MarkerClusterGroup
+                            chunkedLoading
+                            maxClusterRadius={50}
+                            spiderfyOnMaxZoom={true}
+                            showCoverageOnHover={true}
+                            zoomToBoundsOnClick={true}
+                            eventHandlers={{
+                                clusterclick: (e: ClusterClickEvent) => {
+                                    const bounds = e.layer.getBounds();
+                                    const center = bounds.getCenter();
+                                    setClusterZoom(EXPANDED_ZOOM_LEVEL);
+                                    e.target._map.setView(center, EXPANDED_ZOOM_LEVEL);
+                                }
+                            }}
+                            iconCreateFunction={(cluster: CustomMarkerCluster) => {
+                                const childMarkers = cluster.getAllChildMarkers();
+                                let totalImages = 0;
 
-                            // Create custom icon with the first image thumbnail
-                            const customIcon = L.divIcon({
-                                className: '', // No specific container class needed here
-                                html: `<div class="custom-marker-icon"><img src="${processImageUrl(firstImage.image_url)}" alt="Whale"/></div>`,
-                                iconSize: [40, 40], // Size of the icon
-                                iconAnchor: [20, 40], // Point of the icon corresponding to marker's location (bottom center)
-                                popupAnchor: [0, -42] // Point from which the popup should open (adjust slightly for border)
-                            });
+                                // Count all images in the cluster
+                                childMarkers.forEach(marker => {
+                                    const popupContent = marker.getPopup()?.getContent();
+                                    if (typeof popupContent === 'string') {
+                                        const tempDiv = document.createElement('div');
+                                        tempDiv.innerHTML = popupContent;
+                                        const imagesScroll = tempDiv.querySelector('.images-scroll');
+                                        if (imagesScroll) {
+                                            totalImages += imagesScroll.children.length;
+                                        } else {
+                                            totalImages += 1;
+                                        }
+                                    } else {
+                                        totalImages += 1;
+                                    }
+                                });
 
-                            return (
-                                <Marker key={key} position={[lat, lng]} icon={customIcon}>
-                                    <Popup className="cluster-popup">
-                                        <div className="cluster-content">
-                                            <div className="images-scroll">
-                                                {group.map((image) => (
-                                                    <div key={image.id} className="image-item">
-                                                        <img
-                                                            src={image.image_url}
-                                                            alt={image.description}
-                                                            className="popup-image"
-                                                        />
-                                                        <div className="image-info">
-                                                            {image.name && <p><strong>Имя:</strong> {image.name}</p>}
+                                // Get the first marker's image URL from the marker's custom icon
+                                const firstMarker = childMarkers[0];
+                                const iconHtml = (firstMarker.options.icon as L.DivIcon).options.html;
+                                const firstImageUrl = typeof iconHtml === 'string' 
+                                    ? iconHtml.match(/src="([^"]+)"/)?.[1] || ''
+                                    : '';
 
-                                                            {image.whale_type ? (
-                                                                <> {/* Use fragment to group whale type info */}
-                                                                    <p><strong>Вид:</strong> {image.whale_type.species_rus || 'N/A'} ({image.whale_type.species_eng || 'N/A'})</p>
-                                                                </>
-                                                            ) : (
-                                                                <p><strong>Вид:</strong> Не определен</p>
-                                                            )}
+                                return L.divIcon({
+                                    html: `<div class="marker-cluster">
+                                        <img src="${firstImageUrl}" alt="Cluster" class="cluster-image"/>
+                                        <div class="cluster-count">${totalImages}</div>
+                                    </div>`,
+                                    className: '',
+                                    iconSize: L.point(40, 40)
+                                });
+                            }}
+                        >
+                            {Object.entries(groupNearbyImages(images)).map(([key, group]) => {
+                                const [lat, lng] = key.split(',').map(Number);
+                                const firstImage = group[0];
 
-                                                            {image.gender && <p><strong>Пол:</strong> {image.gender === 'муж' ? ' Мужской ♂️' : image.gender === 'жен' ? ' Женский♀️' : image.gender === 'детеныш' ? 'Детеныш 👶' : image.gender}</p>}
+                                const customIcon = L.divIcon({
+                                    className: '',
+                                    html: `<div class="custom-marker-icon">
+                                        <img src="${processImageUrl(firstImage.image_url)}" alt="Whale"/>
+                                        ${group.length > 1 ? `
+                                            <div class="marker-count-badge" title="${group.length} изображений в этой точке">
+                                                <span class="marker-count">${group.length}</span>
+                                            </div>
+                                        ` : ''}
+                                    </div>`,
+                                    iconSize: [40, 40],
+                                    iconAnchor: [20, 40],
+                                    popupAnchor: [0, -42]
+                                });
 
-                                                            <p><strong>Встреча:</strong> {new Date(image.saw_at).toLocaleDateString()}</p>
-
-                                                            {/* Action Buttons: Track / Cancel */}
-                                                            <div className="popup-action-buttons">
-                                                                <button
-                                                                    className="track-btn"
-                                                                    onClick={() => handleTrackClick(image)}
-                                                                    disabled={trackedImageId === image.id} // Disable if already tracked
-                                                                >
-                                                                    Отследить
-                                                                </button>
-                                                                <button
-                                                                    className="cancel-track-btn"
-                                                                    onClick={resetFilters} // Reset filters cancels tracking
-                                                                    disabled={trackedImageId !== image.id} // Enable only if this image is tracked
-                                                                >
-                                                                    Отмена
-                                                                </button>
+                                return (
+                                    <Marker 
+                                        key={key} 
+                                        position={[lat, lng]} 
+                                        icon={customIcon}
+                                    >
+                                        <Popup className="cluster-popup">
+                                            <div className="cluster-content">
+                                                <div className="images-scroll">
+                                                    {group.map((image) => (
+                                                        <div key={image.id} className="image-item">
+                                                            <img
+                                                                src={image.image_url}
+                                                                alt={image.description}
+                                                                className="popup-image"
+                                                            />
+                                                            <div className="image-info">
+                                                                {image.name && <p><strong>Имя:</strong> {image.name}</p>}
+                                                                {image.whale_type && (
+                                                                    <p><strong>Вид:</strong> {image.whale_type.species_rus} ({image.whale_type.species_eng})</p>
+                                                                )}
+                                                                {image.gender && <p><strong>Пол:</strong> {image.gender}</p>}
+                                                                <p><strong>Встреча:</strong> {new Date(image.saw_at).toLocaleDateString()}</p>
+                                                                <div className="popup-action-buttons">
+                                                                    <button
+                                                                        className="track-btn"
+                                                                        onClick={() => handleTrackClick(image)}
+                                                                        disabled={trackedImageId === image.id}
+                                                                    >
+                                                                        Отследить
+                                                                    </button>
+                                                                    <button
+                                                                        className="cancel-track-btn"
+                                                                        onClick={resetFilters}
+                                                                        disabled={trackedImageId !== image.id}
+                                                                    >
+                                                                        Отмена
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            
-                                            {group.length > 1 && (
-                                                <div className="cluster-count">
-                                                    {group.length} изображений в этом районе
+                                                    ))}
                                                 </div>
-                                            )}
-                                        </div>
-                                    </Popup>
-                                </Marker>
-                            );
-                        })}
+                                                {group.length > 1 && (
+                                                    <div className="location-count">
+                                                        {group.length} изображений в этой точке
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </Popup>
+                                    </Marker>
+                                );
+                            })}
+                        </MarkerClusterGroup>
                     </MapContainer>
                 </div>
             </div>
