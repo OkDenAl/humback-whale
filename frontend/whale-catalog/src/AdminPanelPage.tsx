@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AdminPanelPage.css';
 
 // Define the WhaleType interface based on backend structure (same as in App.tsx)
@@ -25,7 +25,7 @@ interface AdminPanelPageProps {
     whaleTypesError: string;
 }
 
-type AdminPage = 'whale-types' | 'statistics';
+type AdminPage = 'whale-types';
 
 interface NewWhaleType {
     species_eng: string;
@@ -40,6 +40,7 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
     const [showNewWhaleTypeModal, setShowNewWhaleTypeModal] = useState(false);
     const [editingWhaleType, setEditingWhaleType] = useState<WhaleType | null>(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+    const [localWhaleTypes, setLocalWhaleTypes] = useState<WhaleType[]>([]);
     const [newWhaleType, setNewWhaleType] = useState<NewWhaleType>({
         species_eng: '',
         species_rus: '',
@@ -49,6 +50,13 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
     });
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Update local state when props change
+    useEffect(() => {
+        if (whaleTypes) {
+            setLocalWhaleTypes(whaleTypes);
+        }
+    }, [whaleTypes]);
 
     const getErrorMessage = (status: number, defaultMessage: string): string => {
         switch (status) {
@@ -95,25 +103,37 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
             
             const method = 'POST';
 
+            const whaleTypeData = {
+                id: editingWhaleType?.id || '',
+                species_eng: editingWhaleType?.species_eng || newWhaleType.species_eng,
+                species_rus: editingWhaleType?.species_rus || newWhaleType.species_rus,
+                family: editingWhaleType?.family || newWhaleType.family,
+                genus: editingWhaleType?.genus || newWhaleType.genus,
+                conservation_status: editingWhaleType?.conservation_status || newWhaleType.conservation_status
+            };
+
             const response = await fetch(url, {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${user?.token || ''}`
                 },
-                body: JSON.stringify({
-                    id: editingWhaleType?.id || '',
-                    species_eng: editingWhaleType?.species_eng || newWhaleType.species_eng,
-                    species_rus: editingWhaleType?.species_rus || newWhaleType.species_rus,
-                    family: editingWhaleType?.family || newWhaleType.family,
-                    genus: editingWhaleType?.genus || newWhaleType.genus,
-                    conservation_status: editingWhaleType?.conservation_status || newWhaleType.conservation_status
-                })
+                body: JSON.stringify(whaleTypeData)
             });
 
             if (!response.ok) {
                 const errorMessage = getErrorMessage(response.status, 'Не удалось сохранить вид кита');
                 throw new Error(errorMessage);
+            }
+
+            // Update local state
+            if (editingWhaleType) {
+                setLocalWhaleTypes(prev => 
+                    prev.map(wt => wt.id === editingWhaleType.id ? whaleTypeData : wt)
+                );
+            } else {
+                // For new whale type, we'll use the data we sent
+                setLocalWhaleTypes(prev => [...prev, whaleTypeData]);
             }
 
             // Закрываем модальное окно и сбрасываем форму
@@ -126,9 +146,6 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
                 genus: '',
                 conservation_status: ''
             });
-            
-            // Здесь можно добавить обновление списка типов китов
-            // Например, вызвать функцию обновления из родительского компонента
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Произошла неизвестная ошибка');
         } finally {
@@ -150,8 +167,9 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
                 throw new Error(errorMessage);
             }
 
+            // Update local state
+            setLocalWhaleTypes(prev => prev.filter(wt => wt.id !== id));
             setShowDeleteConfirm(null);
-            // Здесь можно добавить обновление списка типов китов
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Произошла неизвестная ошибка');
         }
@@ -181,7 +199,7 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
                             <div className="loading-message">Загрузка списка видов китов...</div>
                         ) : whaleTypesError ? (
                             <div className="error-message">Ошибка загрузки видов китов: {whaleTypesError}</div>
-                        ) : whaleTypes.length > 0 ? (
+                        ) : localWhaleTypes.length > 0 ? (
                             <>
                                 <table className="whale-types-table">
                                     <thead>
@@ -195,7 +213,7 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {whaleTypes.map(type => (
+                                        {localWhaleTypes.map(type => (
                                             <tr 
                                                 key={type.id}
                                                 className="whale-type-row"
@@ -238,8 +256,6 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
                         )}
                     </>
                 );
-            case 'statistics':
-                return <h2>Статистика (в разработке)</h2>;
             default:
                 return null;
         }
@@ -256,12 +272,6 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
                             onClick={() => setCurrentPage('whale-types')}
                         >
                             Виды китов
-                        </button>
-                        <button 
-                            className={`admin-nav-item ${currentPage === 'statistics' ? 'active' : ''}`}
-                            onClick={() => setCurrentPage('statistics')}
-                        >
-                            Статистика
                         </button>
                     </nav>
                 </div>

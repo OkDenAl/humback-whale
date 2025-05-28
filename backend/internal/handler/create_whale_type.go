@@ -14,7 +14,7 @@ import (
 // createWhaleType godoc
 // @Summary create whale type or update existing whale type
 // @Schemes
-// @Tags Whale
+// @Tags Whale Types
 // @Param Authorization header string true "Insert your access token" default(Bearer <token>)
 // @Produce json
 // @Success 200

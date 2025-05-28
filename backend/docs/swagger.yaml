@@ -1,20 +1,5 @@
 basePath: /api/v1
 definitions:
-  domain.WhaleType:
-    properties:
-      conservationStatus:
-        type: string
-      family:
-        type: string
-      genus:
-        type: string
-      id:
-        type: string
-      speciesEng:
-        type: string
-      speciesRus:
-        type: string
-    type: object
   getimages.HumpbackWhaleImage:
     properties:
       author_id:
@@ -50,9 +35,26 @@ definitions:
         type: string
       genus:
         type: string
-      whale_type_eng:
+      id:
         type: string
-      whale_type_rus:
+      species_eng:
+        type: string
+      species_rus:
+        type: string
+    type: object
+  getwhaletypes.WhaleType:
+    properties:
+      conservation_status:
+        type: string
+      family:
+        type: string
+      genus:
+        type: string
+      id:
+        type: string
+      species_eng:
+        type: string
+      species_rus:
         type: string
     type: object
   handler.getImagesResp:
@@ -70,7 +72,7 @@ definitions:
     properties:
       whale_types:
         items:
-          $ref: '#/definitions/domain.WhaleType'
+          $ref: '#/definitions/getwhaletypes.WhaleType'
         type: array
     type: object
   handler.httpError:
@@ -121,6 +123,10 @@ definitions:
   handler.updateImageInfoReq:
     properties:
       description:
+        type: string
+      gender:
+        type: string
+      name:
         type: string
       whale_type:
         type: string
@@ -180,23 +186,41 @@ paths:
       summary: Delete a whale image
       tags:
       - Whale
-  /private/whale/types:
-    get:
-      description: Get a list of all available whale types
+  /private/whale/types/{whale_type_id}:
+    delete:
+      description: Deletes a whale type record.
+      parameters:
+      - default: Bearer <token>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Whale Type ID (UUID)
+        in: path
+        name: whale_type_id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
+        "400":
+          description: Invalid Whale Type ID format
           schema:
-            $ref: '#/definitions/handler.getWhaleTypesResp'
+            $ref: '#/definitions/handler.httpError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.httpError'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: get all whale types
+      summary: Delete a whale type
       tags:
-      - Whale
+      - Whale Types
   /private/whale/update:
     post:
       description: update images info
@@ -219,6 +243,14 @@ paths:
           description: ""
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/handler.httpError'
         "500":
@@ -267,6 +299,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/handler.httpError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.httpError'
         "500":
           description: Internal Server Error
           schema:
@@ -295,6 +335,10 @@ paths:
             $ref: '#/definitions/handler.respLogin'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/handler.httpError'
         "404":
@@ -329,6 +373,10 @@ paths:
             $ref: '#/definitions/handler.respRegister'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/handler.httpError'
         "409":
@@ -382,6 +430,10 @@ paths:
           description: Bad request (invalid parameters)
           schema:
             $ref: '#/definitions/handler.httpError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.httpError'
         "404":
           description: Not found (no images match filters)
           schema:
@@ -393,4 +445,49 @@ paths:
       summary: get images with filters
       tags:
       - Whale
+  /public/whale/types:
+    get:
+      description: Get a list of all available whale types
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.getWhaleTypesResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.httpError'
+      summary: get all whale types
+      tags:
+      - Whale Types
+    post:
+      parameters:
+      - default: Bearer <token>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.httpError'
+      summary: create whale type or update existing whale type
+      tags:
+      - Whale Types
 swagger: "2.0"

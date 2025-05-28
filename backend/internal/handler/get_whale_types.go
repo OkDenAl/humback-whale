@@ -15,7 +15,7 @@ import (
 // @Summary get all whale types
 // @Schemes
 // @Description Get a list of all available whale types
-// @Tags Whale
+// @Tags Whale Types
 // @Produce json
 // @Success 200 {object} getWhaleTypesResp
 // @Failure 500 {object} httpError

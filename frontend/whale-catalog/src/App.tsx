@@ -4,6 +4,7 @@ import AppIcon from './assets/whale.jpg'; // Импорт иконки
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import CatalogPage from './CatalogPage';
 import AdminPanelPage from './AdminPanelPage'; // Добавляем импорт новой страницы
+import AboutPage from './AboutPage'; // Добавляем импорт новой страницы
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet'
@@ -87,7 +88,7 @@ const getErrorMessage = (status: number, defaultMessage: string): string => {
         case 409:
             return 'Пользователь с таким email или именем пользователя уже существует.';
         case 422:
-            return 'Не удалось распознать горбатого кита на фотографии.';
+            return 'Не удалось идентифицировать объект на изображении.';
         case 500:
             return 'Внутренняя ошибка сервера. Пожалуйста, попробуйте позже.';
         case 502:
@@ -125,12 +126,17 @@ const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isPreviewLoading, setIsPreviewLoading] = useState(false);
     const [isUploadSuccess, setIsUploadSuccess] = useState(false);
+    const [hasPreviousData, setHasPreviousData] = useState(false);
 
     useEffect(() => {
         const savedUser = localStorage.getItem('whaleUser');
         if (savedUser) {
             setUser(JSON.parse(savedUser));
         }
+
+        // Check if we have previous form data
+        const savedFormData = localStorage.getItem('previousFormData');
+        setHasPreviousData(!!savedFormData);
 
         // Fetch whale types when component mounts
         const fetchWhaleTypes = async () => {
@@ -273,6 +279,19 @@ const App: React.FC = () => {
                 throw new Error(errorMessage);
             }
 
+            // Store form data in localStorage (excluding image and preview)
+            const dataToStore = {
+                latitude: formData.latitude,
+                longitude: formData.longitude,
+                saw_at: formData.saw_at,
+                description: formData.description,
+                name: formData.name,
+                gender: formData.gender,
+                whale_type_id: formData.whale_type_id
+            };
+            localStorage.setItem('previousFormData', JSON.stringify(dataToStore));
+            setHasPreviousData(true);
+
             setIsUploadSuccess(true);
             setFormData({
                 image: null,
@@ -293,6 +312,17 @@ const App: React.FC = () => {
         }
     };
 
+    const handleRestorePreviousData = () => {
+        const savedData = localStorage.getItem('previousFormData');
+        if (savedData) {
+            const previousData = JSON.parse(savedData);
+            setFormData(prev => ({
+                ...prev,
+                ...previousData
+            }));
+        }
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('whaleUser');
         setUser(null);
@@ -306,6 +336,9 @@ const App: React.FC = () => {
                     <img src={AppIcon} alt="Whale Icon" className="app-icon"/>
                     <Link to="/" className="link">
                        Главная
+                    </Link>
+                    <Link to="/about" className="link">
+                        О проекте
                     </Link>
                     <Link to="/catalog" className="link">
                         Каталог
@@ -368,7 +401,7 @@ const App: React.FC = () => {
                             </div>
 
                             <div className="upload-card">
-                                <h1 className="header-card-main">Форма отправки изображения</h1>
+                                <h1 className="header-card-main" title="Заполните форму для отправки фотографии кита. Укажите место и время наблюдения, добавьте описание и, если вы ученый, дополнительную информацию о животном.">Форма отправки изображения</h1>
                                 <br></br>
                                 {isUploadSuccess ? (
                                     <div className="success-message">
@@ -386,33 +419,19 @@ const App: React.FC = () => {
                                     </div>
                                 ) : (
                                     <form onSubmit={handleSubmit} className="upload-form">
-                                        <div className="preview-container">
-                                            {isPreviewLoading ? (
-                                                <div className="loading-spinner"/>
-                                            ) : formData.preview ? (
-                                                <img src={formData.preview} className="preview-image"/>
-                                            ) : (
-                                                <div className="upload-placeholder">
-                                                    <span>Ни одного изображения не выбрано </span>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <label className="file-upload-label">
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageUpload}
-                                                required
-                                            />
-                                            <div className="upload-area">
-                                                <h3>{formData.preview ? 'Изменить изображение' : 'Загрузить изображение'}</h3>
-                                            </div>
-                                        </label>
-
+                                        {hasPreviousData && (
+                                            <button
+                                                type="button"
+                                                className="restore-data-btn"
+                                                onClick={handleRestorePreviousData}
+                                                title="Заполнить данные из предыдущей загрузки"
+                                            >
+                                                Восстановить предыдущие данные
+                                            </button>
+                                        )}
                                         <div className="coordinates-grid">
                                             <div className="input-group">
-                                                <label>Широта</label>
+                                                <label title="Введите широту места наблюдения в градусах (например: 34.0522)">Широта</label>
                                                 <input
                                                     type="number"
                                                     step="any"
@@ -422,7 +441,7 @@ const App: React.FC = () => {
                                                 />
                                             </div>
                                             <div className="input-group">
-                                                <label>Долгота</label>
+                                                <label title="Введите долготу места наблюдения в градусах (например: -118.2437)">Долгота</label>
                                                 <input
                                                     type="number"
                                                     step="any"
@@ -454,6 +473,30 @@ const App: React.FC = () => {
                                             </MapContainer>
                                         </div>
 
+                                        <div className="preview-container">
+                                            {isPreviewLoading ? (
+                                                <div className="loading-spinner"/>
+                                            ) : formData.preview ? (
+                                                <img src={formData.preview} className="preview-image"/>
+                                            ) : (
+                                                <div className="upload-placeholder">
+                                                    <span>Ни одного изображения не выбрано </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <label className="file-upload-label">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                required
+                                            />
+                                            <div className="upload-area">
+                                                <h3>{formData.preview ? 'Изменить изображение' : 'Загрузить изображение'}</h3>
+                                            </div>
+                                        </label>
+
                                         <div className="date-input-container">
                                             <label className="date-label">
                                                 Выберите дату встречи:
@@ -468,7 +511,7 @@ const App: React.FC = () => {
                                         </div>
 
                                         <div className="input-group description-group">
-                                            <label>Описание</label>
+                                            <label title="Опишите детали наблюдения: поведение кита, погодные условия, количество особей и т.д.">Описание</label>
                                             <textarea
                                                 placeholder="Добавьте описание к вашей фотографии..."
                                                 value={formData.description}
@@ -480,7 +523,7 @@ const App: React.FC = () => {
                                         {(user && user.is_scientist) && (
                                             <div className="scientist-fields">
                                                 <div className="input-group">
-                                                    <label>Имя</label>
+                                                    <label title="Введите имя если оно известно">Имя</label>
                                                     <input
                                                         type="text"
                                                         placeholder="Имя кита"
@@ -489,7 +532,7 @@ const App: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div className="input-group">
-                                                    <label>Пол </label>
+                                                    <label title="Выберите пол особи, если его удалось определить">Пол</label>
                                                     <select
                                                         name="gender"
                                                         value={formData.gender}
@@ -501,14 +544,13 @@ const App: React.FC = () => {
                                                         <option value="детеныш">Детеныш</option>
                                                     </select>
                                                 </div>
-                                                {/* New Whale Type Selection Dropdown */}
                                                 <div className="input-group">
-                                                  <label>Вид</label>
+                                                  <label title="Выберите вид кита из списка. Если вид не определен, оставьте поле пустым">Вид</label>
                                                   <select
                                                     name="whale_type_id"
                                                     value={formData.whale_type_id}
                                                     onChange={(e) => setFormData({ ...formData, whale_type_id: e.target.value })}
-                                                    disabled={whaleTypesLoading || !!whaleTypesError} // Disable if loading or error
+                                                    disabled={whaleTypesLoading || !!whaleTypesError}
                                                   >
                                                     <option value="" disabled>
                                                       {whaleTypesLoading ? "Загрузка видов..." : whaleTypesError ? "Ошибка загрузки" : "Выберите вид кита"}
@@ -524,7 +566,6 @@ const App: React.FC = () => {
                                             </div>
                                         )}
 
-                                        {error && <div className="error-message">{error}</div>}
                                         <button
                                             type="submit"
                                             className="submit-btn"
@@ -539,12 +580,22 @@ const App: React.FC = () => {
                                                 'Отправить на проверку'
                                             )}
                                         </button>
+
+                                        {error && (
+                                            <div className="error-message-container">
+                                                <div className="error-message">
+                                                    <div className="error-icon">!</div>
+                                                    {error}
+                                                </div>
+                                            </div>
+                                        )}
                                     </form>
                                 )}
                             </div>
                         </>
                     }/>
                 <Route path="/catalog" element={<CatalogPage/>}/>
+                <Route path="/about" element={<AboutPage/>}/>
                 <Route path="/admin-panel" element={
                     <AdminPanelPage
                         user={user}

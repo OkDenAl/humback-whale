@@ -379,37 +379,42 @@ const CatalogPage: React.FC = () => {
     const handleTrackClick = (image: WhaleImage) => {
         const newFilters = {
             whale_type_id: image.whale_type?.id || '',
-            username: image.username || '',
+            username: '', // Don't include username in tracking
             limit: filters.limit, // Keep current limit
-            name: image.name || '', // Also update name filter
-            gender: image.gender || '' // Also update gender filter
+            name: image.name || '',
+            gender: image.gender || ''
         };
         setFilters(newFilters);
         setTrackedImageId(image.id); // Set the currently tracked image ID
 
-        // Close the popup manually if the map reference is available
-        // This requires getting a ref to the MapContainer, which adds complexity.
-        // Alternatively, let the user close it manually.
-
-        // Fetch images with the new filters
-        // Construct the URL with new filters manually because state update might be async
+        // Construct the URL with new filters
         const params = new URLSearchParams();
         if (newFilters.whale_type_id) params.append('whale_type_id', newFilters.whale_type_id);
-        if (newFilters.username) params.append('username', newFilters.username);
+        if (newFilters.name) params.append('name', newFilters.name);
+        if (newFilters.gender) params.append('gender', newFilters.gender);
         params.append('limit', newFilters.limit.toString());
-        fetchImages(`http://localhost:80/api/v1/public/whale/images?${params.toString()}`);
 
-        // No longer scrolling to filters as they overlay map
-        // Optional: Could scroll map to the general area of the whale?
+        // Automatically fetch images with the new filters
+        fetchImages(`http://localhost:80/api/v1/public/whale/images?${params.toString()}`);
     };
 
-    if (loading && images.length === 0) return <div className="loading">Загружаем изображения китов...</div>;
+    if (loading && images.length === 0) return (
+        <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Загружаем каталог китов...</div>
+        </div>
+    );
     // Show loading indicator without replacing content if loading more images
     const showLoadingIndicator = (loading && images.length > 0) || saveLoading;
 
     return (
         <div className="catalog-container">
-            {showLoadingIndicator && <div className="loading-indicator">{saveLoading ? 'Сохранение...' : 'Загрузка...'}</div>}
+            {showLoadingIndicator && (
+                <div className="loading-indicator">
+                    <div className="loading-spinner"></div>
+                    <span>{saveLoading ? 'Сохранение...' : 'Загрузка...'}</span>
+                </div>
+            )}
             {error && (
                 <div className="error-banner">
                     ⚠️ {error}

@@ -15,8 +15,8 @@ type iUserRepo interface {
 }
 
 type iHumpbackWhaleRepo interface {
-	GetWhalesBeforeCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleType *uuid.UUID) ([]*domain.HumpbackWhale, error)
-	GetWhalesAfterCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleTypeKey *uuid.UUID) ([]*domain.HumpbackWhale, error)
+	GetWhalesBeforeCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleType *uuid.UUID, gender *string, whaleName *string) ([]*domain.HumpbackWhale, error)
+	GetWhalesAfterCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleTypeKey *uuid.UUID, gender *string, whaleName *string) ([]*domain.HumpbackWhale, error)
 }
 
 type iImageRepo interface {

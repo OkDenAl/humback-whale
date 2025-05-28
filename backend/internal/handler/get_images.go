@@ -54,6 +54,8 @@ func (h Handler) getImages() gin.HandlerFunc {
 			req.WhaleTypeID,
 			req.StartTimePeriod,
 			req.EndTimePeriod,
+			req.Gender,
+			req.WhaleName,
 		)
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("failed to create query for get images")
@@ -139,6 +141,8 @@ func getGetImagesReq(c *gin.Context) (getImagesReq, error) {
 		Cursor:          ptr.NilIfZero(cursor),
 		Username:        ptr.NilIfZero(c.Query("username")),
 		WhaleTypeID:     ptr.NilIfZero(c.Query("whale_type_id")),
+		Gender:          ptr.NilIfZero(c.Query("gender")),
+		WhaleName:       ptr.NilIfZero(c.Query("name")),
 		StartTimePeriod: ptr.NilIfZero(startTime),
 		EndTimePeriod:   ptr.NilIfZero(endTime),
 	}, nil
@@ -151,6 +155,8 @@ type getImagesReq struct {
 	WhaleTypeID     *string
 	StartTimePeriod *time.Time
 	EndTimePeriod   *time.Time
+	Gender          *string
+	WhaleName       *string
 }
 
 type getImagesResp struct {

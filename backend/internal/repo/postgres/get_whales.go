@@ -15,17 +15,16 @@ import (
 	"github.com/OkDenAl/humback-whale/internal/repo/postgres/dbview"
 )
 
-func (r Repo) GetWhalesBeforeCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleTypeID *uuid.UUID) ([]*domain.HumpbackWhale, error) {
-	b := psql.Select(dbview.HumpbackWhaleFields().All()...).From(dbview.HumpbackWhaleTableName)
-	if authorID != nil {
-		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().AuthorID: authorID})
-	}
-	if whaleTypeID != nil {
-		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().WhaleTypeID: whaleTypeID})
-	}
-	if cursor != nil {
-		b = b.Where(sq.LtOrEq{dbview.HumpbackWhaleFields().CreatedAt: cursor})
-	}
+func (r Repo) GetWhalesBeforeCursor(
+	ctx context.Context,
+	limit int,
+	cursor *time.Time,
+	authorID *uuid.UUID,
+	whaleTypeID *uuid.UUID,
+	gender *string,
+	whaleName *string,
+) ([]*domain.HumpbackWhale, error) {
+	b := createQuery(cursor, authorID, whaleTypeID, gender, whaleName)
 
 	req, args, err := b.OrderBy(fmt.Sprintf("%s DESC", dbview.HumpbackWhaleFields().CreatedAt)).
 		Limit(uint64(limit) + 1).
@@ -46,17 +45,15 @@ func (r Repo) GetWhalesBeforeCursor(ctx context.Context, limit int, cursor *time
 	return dbview.HumpbackWhaleRecordsToDomain(view), nil
 }
 
-func (r Repo) GetWhalesAfterCursor(ctx context.Context, limit int, cursor *time.Time, authorID *uuid.UUID, whaleTypeID *uuid.UUID) ([]*domain.HumpbackWhale, error) {
-	b := psql.Select(dbview.HumpbackWhaleFields().All()...).From(dbview.HumpbackWhaleTableName)
-	if authorID != nil {
-		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().AuthorID: authorID})
-	}
-	if whaleTypeID != nil {
-		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().WhaleTypeID: whaleTypeID})
-	}
-	if cursor != nil {
-		b = b.Where(sq.Gt{dbview.HumpbackWhaleFields().CreatedAt: cursor})
-	}
+func (r Repo) GetWhalesAfterCursor(ctx context.Context,
+	limit int,
+	cursor *time.Time,
+	authorID *uuid.UUID,
+	whaleTypeID *uuid.UUID,
+	gender *string,
+	whaleName *string,
+) ([]*domain.HumpbackWhale, error) {
+	b := createQuery(cursor, authorID, whaleTypeID, gender, whaleName)
 
 	req, args, err := b.OrderBy(fmt.Sprintf("%s ASC", dbview.HumpbackWhaleFields().CreatedAt)).
 		Limit(uint64(limit)).
@@ -75,4 +72,30 @@ func (r Repo) GetWhalesAfterCursor(ctx context.Context, limit int, cursor *time.
 	}
 
 	return dbview.HumpbackWhaleRecordsToDomain(view), nil
+}
+
+func createQuery(cursor *time.Time,
+	authorID *uuid.UUID,
+	whaleTypeID *uuid.UUID,
+	gender *string,
+	whaleName *string,
+) sq.SelectBuilder {
+	b := psql.Select(dbview.HumpbackWhaleFields().All()...).From(dbview.HumpbackWhaleTableName)
+	if authorID != nil {
+		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().AuthorID: authorID})
+	}
+	if whaleTypeID != nil {
+		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().WhaleTypeID: whaleTypeID})
+	}
+	if cursor != nil {
+		b = b.Where(sq.LtOrEq{dbview.HumpbackWhaleFields().CreatedAt: cursor})
+	}
+	if gender != nil {
+		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().Gender: gender})
+	}
+	if whaleName != nil {
+		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().WhaleName: whaleName})
+	}
+
+	return b
 }

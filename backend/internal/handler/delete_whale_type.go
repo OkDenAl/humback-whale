@@ -13,7 +13,7 @@ import (
 // @Summary Delete a whale type
 // @Schemes
 // @Description Deletes a whale type record.
-// @Tags Whale
+// @Tags Whale Types
 // @Param Authorization header string true "Insert your access token" default(Bearer <token>)
 // @Param whale_type_id path string true "Whale Type ID (UUID)"
 // @Produce json
@@ -21,7 +21,7 @@ import (
 // @Failure 400 {object} httpError "Invalid Whale Type ID format"
 // @Failure 401 {object} httpError "Unauthorized"
 // @Failure 500 {object} httpError "Internal Server Error"
-// @Router /private/whale/type/{whale_type_id} [delete]
+// @Router /private/whale/types/{whale_type_id} [delete]
 func (h Handler) deleteWhaleType() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logger.New()

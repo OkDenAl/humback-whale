@@ -7,3 +7,4 @@ CREATE TABLE IF NOT EXISTS site_user (
 );
 
 CREATE INDEX IF NOT EXISTS user_by_email_idx ON site_user USING HASH (email);
+CREATE INDEX IF NOT EXISTS user_by_username_idx ON site_user USING HASH (username);

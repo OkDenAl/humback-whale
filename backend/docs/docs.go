@@ -19,21 +19,47 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/private/whale/types": {
-            "get": {
-                "description": "Get a list of all available whale types",
+        "/private/whale/types/{whale_type_id}": {
+            "delete": {
+                "description": "Deletes a whale type record.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Whale"
+                    "Whale Types"
                 ],
-                "summary": "get all whale types",
+                "summary": "Delete a whale type",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003ctoken\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Whale Type ID (UUID)",
+                        "name": "whale_type_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Invalid Whale Type ID format",
                         "schema": {
-                            "$ref": "#/definitions/handler.getWhaleTypesResp"
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
                         }
                     },
                     "500": {
@@ -79,6 +105,18 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/handler.httpError"
                         }
@@ -148,6 +186,18 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
                         "schema": {
                             "$ref": "#/definitions/handler.httpError"
                         }
@@ -256,6 +306,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/handler.httpError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -304,6 +360,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/handler.httpError"
                         }
@@ -385,6 +447,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/handler.httpError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
                     "404": {
                         "description": "Not found (no images match filters)",
                         "schema": {
@@ -399,32 +467,77 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/public/whale/types": {
+            "get": {
+                "description": "Get a list of all available whale types",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Whale Types"
+                ],
+                "summary": "get all whale types",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.getWhaleTypesResp"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Whale Types"
+                ],
+                "summary": "create whale type or update existing whale type",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003ctoken\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "domain.WhaleType": {
-            "type": "object",
-            "properties": {
-                "conservationStatus": {
-                    "type": "string"
-                },
-                "family": {
-                    "type": "string"
-                },
-                "genus": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "speciesEng": {
-                    "type": "string"
-                },
-                "speciesRus": {
-                    "type": "string"
-                }
-            }
-        },
         "getimages.HumpbackWhaleImage": {
             "type": "object",
             "properties": {
@@ -478,10 +591,36 @@ const docTemplate = `{
                 "genus": {
                     "type": "string"
                 },
-                "whale_type_eng": {
+                "id": {
                     "type": "string"
                 },
-                "whale_type_rus": {
+                "species_eng": {
+                    "type": "string"
+                },
+                "species_rus": {
+                    "type": "string"
+                }
+            }
+        },
+        "getwhaletypes.WhaleType": {
+            "type": "object",
+            "properties": {
+                "conservation_status": {
+                    "type": "string"
+                },
+                "family": {
+                    "type": "string"
+                },
+                "genus": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "species_eng": {
+                    "type": "string"
+                },
+                "species_rus": {
                     "type": "string"
                 }
             }
@@ -509,7 +648,7 @@ const docTemplate = `{
                 "whale_types": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/domain.WhaleType"
+                        "$ref": "#/definitions/getwhaletypes.WhaleType"
                     }
                 }
             }
@@ -588,6 +727,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "description": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "whale_type": {

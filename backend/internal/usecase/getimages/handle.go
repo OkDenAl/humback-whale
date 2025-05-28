@@ -31,7 +31,15 @@ func (u UC) Handle(ctx context.Context, q Query) (QueryResult, error) {
 		authorID = &user.ID
 	}
 
-	images, err := u.humpbackWhaleRepo.GetWhalesBeforeCursor(ctx, q.Limit, q.Cursor, authorID, q.WhaleTypeID)
+	images, err := u.humpbackWhaleRepo.GetWhalesBeforeCursor(
+		ctx,
+		q.Limit,
+		q.Cursor,
+		authorID,
+		q.WhaleTypeID,
+		q.Gender,
+		q.WhaleName,
+	)
 	if err != nil && !errors.Is(err, integrationerror.ErrHumpbackWhaleNotFound) {
 		return QueryResult{}, err
 	}
@@ -50,7 +58,15 @@ func (u UC) Handle(ctx context.Context, q Query) (QueryResult, error) {
 	}
 
 	if q.Cursor != nil {
-		img, err := u.humpbackWhaleRepo.GetWhalesAfterCursor(ctx, q.Limit, q.Cursor, authorID, q.WhaleTypeID)
+		img, err := u.humpbackWhaleRepo.GetWhalesAfterCursor(
+			ctx,
+			q.Limit,
+			q.Cursor,
+			authorID,
+			q.WhaleTypeID,
+			q.Gender,
+			q.WhaleName,
+		)
 		if err != nil && !errors.Is(err, integrationerror.ErrHumpbackWhaleNotFound) {
 			return QueryResult{}, err
 		}

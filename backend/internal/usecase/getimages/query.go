@@ -16,6 +16,8 @@ type Query struct {
 	WhaleTypeID     *uuid.UUID
 	StartTimePeriod *time.Time
 	EndTimePeriod   *time.Time
+	Gender          *string
+	WhaleName       *string
 }
 
 func NewQuery(
@@ -25,6 +27,8 @@ func NewQuery(
 	whaleTypeID *string,
 	startTimePeriod *time.Time,
 	endTimePeriod *time.Time,
+	gender *string,
+	whaleName *string,
 ) (Query, error) {
 	if limit <= 0 {
 		return Query{}, errors.Errorf("limit must be greater than 0")
@@ -47,6 +51,8 @@ func NewQuery(
 		WhaleTypeID:     ptr.NilIfZero(whaleTypeUUID),
 		StartTimePeriod: startTimePeriod,
 		EndTimePeriod:   endTimePeriod,
+		Gender:          gender,
+		WhaleName:       whaleName,
 	}, nil
 }
 

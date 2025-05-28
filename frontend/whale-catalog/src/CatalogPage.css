@@ -685,18 +685,59 @@ select.filter-input:disabled {
     cursor: pointer;
 }
 
-/* Loading indicator style */
+/* Loading styles */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 2rem;
+}
+
+.loading-text {
+    font-size: 2rem;
+    color: white;
+    font-weight: 500;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid var(--primary-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Update existing loading indicator */
 .loading-indicator {
     position: fixed;
-    top: 10px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8);
     color: white;
-    padding: 8px 15px;
-    border-radius: 5px;
-    z-index: 1001; /* Ensure it's above modal backdrop but potentially below modal content */
-    font-size: 0.9rem;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.loading-indicator .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border-width: 3px;
 }
 
 /* Style for the delete button */
