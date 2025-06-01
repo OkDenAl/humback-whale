@@ -179,9 +179,6 @@ const CatalogPage: React.FC = () => {
     const isScientist = user?.is_scientist || false;
     const token = user?.token;
 
-    console.log('User:', user);
-    console.log('Is Scientist:', isScientist);
-
     const buildQueryString = () => {
         const params = new URLSearchParams();
         if (filters.whale_type_id) params.append('whale_type_id', filters.whale_type_id);

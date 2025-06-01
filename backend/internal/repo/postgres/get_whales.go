@@ -26,6 +26,10 @@ func (r Repo) GetWhalesBeforeCursor(
 ) ([]*domain.HumpbackWhale, error) {
 	b := createQuery(cursor, authorID, whaleTypeID, gender, whaleName)
 
+	if cursor != nil {
+		b = b.Where(sq.LtOrEq{dbview.HumpbackWhaleFields().CreatedAt: cursor})
+	}
+
 	req, args, err := b.OrderBy(fmt.Sprintf("%s DESC", dbview.HumpbackWhaleFields().CreatedAt)).
 		Limit(uint64(limit) + 1).
 		ToSql()
@@ -54,6 +58,10 @@ func (r Repo) GetWhalesAfterCursor(ctx context.Context,
 	whaleName *string,
 ) ([]*domain.HumpbackWhale, error) {
 	b := createQuery(cursor, authorID, whaleTypeID, gender, whaleName)
+
+	if cursor != nil {
+		b = b.Where(sq.Gt{dbview.HumpbackWhaleFields().CreatedAt: cursor})
+	}
 
 	req, args, err := b.OrderBy(fmt.Sprintf("%s ASC", dbview.HumpbackWhaleFields().CreatedAt)).
 		Limit(uint64(limit)).
@@ -86,9 +94,6 @@ func createQuery(cursor *time.Time,
 	}
 	if whaleTypeID != nil {
 		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().WhaleTypeID: whaleTypeID})
-	}
-	if cursor != nil {
-		b = b.Where(sq.LtOrEq{dbview.HumpbackWhaleFields().CreatedAt: cursor})
 	}
 	if gender != nil {
 		b = b.Where(sq.Eq{dbview.HumpbackWhaleFields().Gender: gender})
