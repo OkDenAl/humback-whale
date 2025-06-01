@@ -22,6 +22,8 @@ import (
 	"github.com/OkDenAl/humback-whale/internal/usecase/getwhaletypes"
 	"github.com/OkDenAl/humback-whale/internal/usecase/login"
 	"github.com/OkDenAl/humback-whale/internal/usecase/register"
+	"github.com/OkDenAl/humback-whale/internal/usecase/resetpassword"
+	"github.com/OkDenAl/humback-whale/internal/usecase/sendresetpassword"
 	"github.com/OkDenAl/humback-whale/internal/usecase/savewhaletype"
 	"github.com/OkDenAl/humback-whale/internal/usecase/updateimginfo"
 	"github.com/OkDenAl/humback-whale/internal/usecase/uploadwhaleimg"
@@ -59,6 +61,8 @@ func initAndStartHTTPServer(
 	deleteWhaleImageUC *deletewhaleimg.UC,
 	saveWhaleTypesUC *savewhaletype.UC,
 	deleteWhaleTypesUC *deletewhaletype.UC,
+	sendResetPasswordUC *sendresetpassword.UC,
+	resetPasswordUC *resetpassword.UC,
 ) <-chan error {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
@@ -77,6 +81,8 @@ func initAndStartHTTPServer(
 		deleteWhaleImageUC,
 		saveWhaleTypesUC,
 		deleteWhaleTypesUC,
+		sendResetPasswordUC,
+		resetPasswordUC,
 	)
 
 	publicApi := engine.Group("api/v1/public")

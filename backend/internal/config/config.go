@@ -9,6 +9,7 @@ import (
 
 	"github.com/OkDenAl/humback-whale/internal/repo/http/mlrecognizer"
 	"github.com/OkDenAl/humback-whale/internal/service/jwtgenerator"
+	"github.com/OkDenAl/humback-whale/internal/service/mailsender"
 	"github.com/OkDenAl/humback-whale/internal/usecase/getimages"
 	"github.com/OkDenAl/humback-whale/pkg/minioclient"
 	"github.com/OkDenAl/humback-whale/pkg/postgresclient"
@@ -25,6 +26,7 @@ type Config struct {
 	MlRecognizerHTTP mlrecognizer.ClientConfig `yaml:"ml_recognizer_http" validate:"required"`
 
 	JWTGenerator jwtgenerator.Config `yaml:"jwt_generator" env-prefix:"JWT_" validate:"required"`
+	MailSender   mailsender.Config   `yaml:"mail_sender" env-prefix:"MAIL_SENDER_" validate:"required"`
 
 	GetImagesUC getimages.Config `yaml:"get_images_uc" validate:"required"`
 }

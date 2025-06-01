@@ -11,7 +11,9 @@ import (
 	"github.com/OkDenAl/humback-whale/internal/usecase/getwhaletypes"
 	"github.com/OkDenAl/humback-whale/internal/usecase/login"
 	"github.com/OkDenAl/humback-whale/internal/usecase/register"
+	"github.com/OkDenAl/humback-whale/internal/usecase/resetpassword"
 	"github.com/OkDenAl/humback-whale/internal/usecase/savewhaletype"
+	"github.com/OkDenAl/humback-whale/internal/usecase/sendresetpassword"
 	"github.com/OkDenAl/humback-whale/internal/usecase/updateimginfo"
 	"github.com/OkDenAl/humback-whale/internal/usecase/uploadwhaleimg"
 )
@@ -52,6 +54,14 @@ type iDeleteWhaleTypesUC interface {
 	Handle(ctx context.Context, cmd deletewhaletype.Command) error
 }
 
+type iSendResetPasswordUC interface {
+	Handle(ctx context.Context, cmd sendresetpassword.Command) error
+}
+
+type iResetPasswordUC interface {
+	Handle(ctx context.Context, cmd resetpassword.Command) error
+}
+
 type Handler struct {
 	uploadWhaleImageUC     iUploadWhaleImageUC
 	getWhaleImageUC        iGetWhaleImageUC
@@ -62,6 +72,8 @@ type Handler struct {
 	deleteWhaleImageUC     iDeleteWhaleImageUC
 	saveWhaleTypesUC       iSaveWhaleTypesUC
 	deleteWhaleTypesUC     iDeleteWhaleTypesUC
+	sendResetPasswordUC    iSendResetPasswordUC
+	resetPasswordUC        iResetPasswordUC
 }
 
 func New(
@@ -74,6 +86,8 @@ func New(
 	deleteWhaleImageUC iDeleteWhaleImageUC,
 	saveWhaleTypesUC iSaveWhaleTypesUC,
 	deleteWhaleTypesUC iDeleteWhaleTypesUC,
+	sendResetPasswordUC iSendResetPasswordUC,
+	resetPasswordUC iResetPasswordUC,
 ) Handler {
 	return Handler{
 		uploadWhaleImageUC:     uploadWhaleImageUC,
@@ -85,6 +99,8 @@ func New(
 		deleteWhaleImageUC:     deleteWhaleImageUC,
 		saveWhaleTypesUC:       saveWhaleTypesUC,
 		deleteWhaleTypesUC:     deleteWhaleTypesUC,
+		sendResetPasswordUC:    sendResetPasswordUC,
+		resetPasswordUC:        resetPasswordUC,
 	}
 }
 
@@ -101,6 +117,8 @@ func (h Handler) SetPrivateRouter(api *gin.RouterGroup) {
 func (h Handler) SetPublicRouter(api *gin.RouterGroup) {
 	api.POST("/auth/login", h.login())
 	api.POST("/auth/register", h.register())
+	api.POST("/auth/send-reset-password", h.sendResetPassword())
+	api.POST("/auth/reset-password", h.resetPassword())
 
 	api.GET("/whale/images", h.getImages())
 	api.GET("/whale/types", h.getWhaleTypes())

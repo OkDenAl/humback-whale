@@ -378,6 +378,98 @@
                 }
             }
         },
+        "/public/auth/reset-password": {
+            "post": {
+                "description": "reset password using token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "reset password",
+                "parameters": [
+                    {
+                        "description": "JSON",
+                        "name": "text",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.resetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.resetPasswordResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/auth/send-reset-password": {
+            "post": {
+                "description": "send reset password email to user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "send reset password email",
+                "parameters": [
+                    {
+                        "description": "JSON",
+                        "name": "text",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.sendResetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.sendResetPasswordResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            }
+        },
         "/public/whale/images": {
             "get": {
                 "description": "get whale images with pagination and filters",
@@ -694,6 +786,29 @@
                 }
             }
         },
+        "handler.resetPasswordRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "token"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.resetPasswordResp": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.respLogin": {
             "type": "object",
             "properties": {
@@ -711,7 +826,32 @@
         "handler.respRegister": {
             "type": "object",
             "properties": {
+                "is_scientist": {
+                    "type": "boolean"
+                },
                 "token": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.sendResetPasswordRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.sendResetPasswordResp": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string"
                 }
             }

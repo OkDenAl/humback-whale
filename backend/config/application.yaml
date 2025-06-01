@@ -24,7 +24,6 @@ minio_s3:
   bucket_name: humpback-whale-image
 
 ml_recognizer_http:
-#  host: http://localhost:8001/api/v1
   host: http://localhost:8001/api/v1
   timeout: 5s
   backoff_timeout: 100ms
@@ -47,5 +46,11 @@ jwt_generator:
   ttl: 24h
 
 get_images_uc:
-#  url_page_template: http://localhost:8000/api/v1/public/whale/images?limit={limit}&cursor={cursor} #local
   url_page_template: http://localhost:80/api/v1/public/whale/images?limit={limit}&cursor={cursor}
+
+mail_sender:
+  host: smtp.yandex.ru
+  port: 465
+  username: # MAIL_SENDER_USERNAME
+  password: # MAIL_SENDER_PASSWORD
+  from: raiden4545@yandex.ru

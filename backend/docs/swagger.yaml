@@ -106,6 +106,21 @@ definitions:
       username:
         type: string
     type: object
+  handler.resetPasswordRequest:
+    properties:
+      password:
+        type: string
+      token:
+        type: string
+    required:
+    - password
+    - token
+    type: object
+  handler.resetPasswordResp:
+    properties:
+      message:
+        type: string
+    type: object
   handler.respLogin:
     properties:
       is_scientist:
@@ -117,7 +132,23 @@ definitions:
     type: object
   handler.respRegister:
     properties:
+      is_scientist:
+        type: boolean
       token:
+        type: string
+      username:
+        type: string
+    type: object
+  handler.sendResetPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  handler.sendResetPasswordResp:
+    properties:
+      message:
         type: string
     type: object
   handler.updateImageInfoReq:
@@ -388,6 +419,66 @@ paths:
           schema:
             $ref: '#/definitions/handler.httpError'
       summary: register user
+      tags:
+      - Auth
+  /public/auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: reset password using token
+      parameters:
+      - description: JSON
+        in: body
+        name: text
+        required: true
+        schema:
+          $ref: '#/definitions/handler.resetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.resetPasswordResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.httpError'
+      summary: reset password
+      tags:
+      - Auth
+  /public/auth/send-reset-password:
+    post:
+      consumes:
+      - application/json
+      description: send reset password email to user
+      parameters:
+      - description: JSON
+        in: body
+        name: text
+        required: true
+        schema:
+          $ref: '#/definitions/handler.sendResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.sendResetPasswordResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.httpError'
+      summary: send reset password email
       tags:
       - Auth
   /public/whale/images:

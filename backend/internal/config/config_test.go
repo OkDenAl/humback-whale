@@ -24,6 +24,8 @@ func TestCfg_Validate(t *testing.T) {
 				cfg.MinioS3.RootUser = "test"
 				cfg.MinioS3.RootPassword = "<PASSWORD>"
 				cfg.JWTGenerator.SigningKey = "test"
+				cfg.MailSender.Username = "test"
+				cfg.MailSender.Password = "<PASSWORD>"
 			},
 		},
 	}

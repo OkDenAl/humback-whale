@@ -845,3 +845,128 @@ button{
         transform: translateY(0);
     }
 }
+
+.forgot-password-link {
+    background: none;
+    border: none;
+    color: var(--primary-blue);
+    cursor: pointer;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: center;
+}
+
+.forgot-password-link:hover {
+    text-decoration: underline;
+}
+
+.reset-info {
+    color: var(--dark-gray);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.reset-success {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.reset-success h3 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+}
+
+.reset-success p {
+    color: var(--dark-gray);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.reset-password-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.reset-password-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.reset-password-container h2 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.reset-success-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.reset-success-page .success-message {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-align: center;
+    max-width: 400px;
+}
+
+.reset-success-page .success-icon {
+    font-size: 4rem;
+    color: #4CAF50;
+    margin-bottom: 1rem;
+    animation: bounce 0.5s;
+}
+
+.reset-success-page h3 {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+}
+
+.reset-success-page p {
+    color: var(--dark-gray);
+    line-height: 1.4;
+}
+
+.password-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--dark-gray);
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-toggle:hover {
+    color: var(--primary-blue);
+}
+
+.password-toggle:focus {
+    outline: none;
+}
