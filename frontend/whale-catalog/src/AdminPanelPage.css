@@ -295,7 +295,7 @@
     padding: 2rem;
     border-radius: var(--border-radius);
     border: 2px solid var(--ocean-blue);
-    max-width: 450px !important; /* Override any other max-width */
+    max-width: 450px !important;
     width: 90%;
     text-align: center;
     position: relative;

@@ -2,7 +2,7 @@ package register
 
 import (
 	"github.com/pkg/errors"
-	
+
 	"github.com/OkDenAl/humback-whale/internal/domain"
 )
 
@@ -50,4 +50,10 @@ func NewCommand(
 		Rank:        rank,
 		PlaceOfWork: placeOfWork,
 	}, nil
+}
+
+type Result struct {
+	Token       string
+	IsScientist bool
+	Username    string
 }

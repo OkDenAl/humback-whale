@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './AdminPanelPage.css';
 
-// Define the WhaleType interface based on backend structure (same as in App.tsx)
 interface WhaleType {
     id: string;
     species_eng: string;
@@ -51,7 +50,6 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Update local state when props change
     useEffect(() => {
         if (whaleTypes) {
             setLocalWhaleTypes(whaleTypes);
@@ -126,17 +124,14 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
                 throw new Error(errorMessage);
             }
 
-            // Update local state
             if (editingWhaleType) {
                 setLocalWhaleTypes(prev => 
                     prev.map(wt => wt.id === editingWhaleType.id ? whaleTypeData : wt)
                 );
             } else {
-                // For new whale type, we'll use the data we sent
                 setLocalWhaleTypes(prev => [...prev, whaleTypeData]);
             }
 
-            // Закрываем модальное окно и сбрасываем форму
             setShowNewWhaleTypeModal(false);
             setEditingWhaleType(null);
             setNewWhaleType({
@@ -167,7 +162,6 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
                 throw new Error(errorMessage);
             }
 
-            // Update local state
             setLocalWhaleTypes(prev => prev.filter(wt => wt.id !== id));
             setShowDeleteConfirm(null);
         } catch (err) {
@@ -183,9 +177,9 @@ const AdminPanelPage: React.FC<AdminPanelPageProps> = ({ user, whaleTypes, whale
     if (!user || !user.is_scientist) {
         return (
             <div className="access-denied">
-                <h2>Access Denied</h2>
-                <p>Only scientists can access the admin panel.</p>
-                {/* Можно добавить кнопку для входа/регистрации или ссылку на главную */}
+                <h2>Доступ запрещен</h2>
+                <p>Только ученые имеют доступ к панели управления.</p>
+                {}
             </div>
         );
     }

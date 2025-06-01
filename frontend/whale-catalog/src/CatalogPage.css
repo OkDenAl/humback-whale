@@ -4,10 +4,6 @@
     max-width: 1400px;
 }
 
-.leaflet-popup-content p{
-    /* margin: 0em 0em 0em 0em; */ /* Remove this less specific rule */
-}
-
 .image-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -319,7 +315,6 @@
     font-family: inherit;
 }
 
-/* Add specific styles for select appearance */
 select.filter-input {
   appearance: none;
   background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
@@ -329,7 +324,6 @@ select.filter-input {
   padding-right: 2.5em;
 }
 
-/* Style for disabled select */
 select.filter-input:disabled {
     background-color: #e9ecef;
     cursor: not-allowed;
@@ -785,17 +779,14 @@ select.filter-input:disabled {
     transform: scale(1.1);
 }
 
-/* Show delete button when hovering over the card */
 .image-card:hover .delete-btn {
     opacity: 1;
 }
 
-/* Ensure the image card has relative positioning for absolute positioning of delete button */
 .image-card {
     position: relative;
 }
 
-/* Confirmation Modal Styles */
 .confirmation-modal1 {
     position: fixed;
     top: 0;
@@ -815,7 +806,7 @@ select.filter-input:disabled {
     padding: 2rem;
     border-radius: var(--border-radius);
     border: 2px solid var(--ocean-blue);
-    max-width: 450px !important; /* Override any other max-width */
+    max-width: 450px !important;
     width: 90%;
     text-align: center;
     position: relative;
@@ -834,7 +825,6 @@ select.filter-input:disabled {
     color: var(--dark-gray);
 }
 
-/* Style for the confirm delete button */
 .confirm-delete-btn {
     background-color: #dc3545 !important;
     color: white !important;
@@ -856,7 +846,6 @@ select.filter-input:disabled {
     cursor: not-allowed;
 }
 
-/* Animation for modal appearance */
 @keyframes modalAppear {
     from {
         opacity: 0;
@@ -868,7 +857,6 @@ select.filter-input:disabled {
     }
 }
 
-/* Styles for the collapsed filter form */
 .filters-form.collapsed {
     max-height: 70px;
     padding: 0.5rem;
@@ -888,14 +876,12 @@ select.filter-input:disabled {
     display: none;
 }
 
-/* Container for action buttons in popup */
 .popup-action-buttons {
     display: flex;
-    gap: 8px; /* Space between buttons */
-    margin-top: 8px; /* Space above the buttons */
+    gap: 8px;
+    margin-top: 8px;
 }
 
-/* Leaflet cluster styles */
 .marker-cluster {
     background-color: white;
     border: 3px solid var(--primary-blue);
@@ -943,7 +929,6 @@ select.filter-input:disabled {
     padding: 0 4px;
 }
 
-/* Spider lines animation */
 .marker-cluster-spider {
     animation: spiderLine 0.3s ease-out;
 }
@@ -959,7 +944,6 @@ select.filter-input:disabled {
     }
 }
 
-/* Update marker count styles */
 .marker-count {
     position: absolute;
     bottom: -5px;
@@ -979,7 +963,6 @@ select.filter-input:disabled {
     z-index: 1;
 }
 
-/* Location count styles */
 .location-count {
     margin-top: 10px;
     padding: 10px;
@@ -992,7 +975,6 @@ select.filter-input:disabled {
     font-size: 1.1rem;
 }
 
-/* Marker count badge styles */
 .marker-count-badge {
     position: absolute;
     bottom: -8px;

@@ -51,7 +51,7 @@ func (h Handler) register() gin.HandlerFunc {
 			return
 		}
 
-		token, err := h.registerUC.Handle(c, cmd)
+		res, err := h.registerUC.Handle(c, cmd)
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("failed to register")
 			switch {
@@ -71,7 +71,9 @@ func (h Handler) register() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, respRegister{
-			Token: token,
+			Token:       res.Token,
+			Username:    res.Username,
+			IsScientist: res.IsScientist,
 		})
 	}
 }
@@ -87,5 +89,7 @@ type reqRegister struct {
 }
 
 type respRegister struct {
-	Token string `json:"token"`
+	Token       string `json:"token"`
+	IsScientist bool   `json:"is_scientist"`
+	Username    string `json:"username"`
 }

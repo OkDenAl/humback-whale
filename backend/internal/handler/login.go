@@ -59,6 +59,11 @@ func (h Handler) login() gin.HandlerFunc {
 					http.StatusNotFound,
 					newError(errors.Wrap(err, "failed to login"), http.StatusNotFound),
 				)
+			case errors.Is(err, login.ErrInvalidPassword):
+				c.JSON(
+					http.StatusNotAcceptable,
+					newError(errors.Wrap(err, "failed to login"), http.StatusNotAcceptable),
+				)
 			default:
 				c.JSON(
 					http.StatusInternalServerError,

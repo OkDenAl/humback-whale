@@ -19,14 +19,12 @@ type iRecognizerRepo interface {
 	RecognizeWhale(ctx context.Context, url string) error
 }
 
-// UC обработчик команд, удовлетворяющих интерфейсу Command.
 type UC struct {
 	humpbackWhaleRepo iHumpbackWhaleRepo
 	imageStorageRepo  iImageRepo
 	recognizerRepo    iRecognizerRepo
 }
 
-// NewUC возвращает новый UC.
 func NewUC(humpbackWhaleRepo iHumpbackWhaleRepo, imageStorageRepo iImageRepo, recognizerRepo iRecognizerRepo) *UC {
 	return &UC{
 		humpbackWhaleRepo: humpbackWhaleRepo,

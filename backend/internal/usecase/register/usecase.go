@@ -9,19 +9,18 @@ import (
 type iUserRepo interface {
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	CreateUser(ctx context.Context, user *domain.User) error
+	GetUserByUsername(ctx context.Context, username string) (*domain.User, error)
 }
 
 type iJWTGenerator interface {
 	GenerateToken(ctx context.Context, userID uuid.UUID, role string) (string, error)
 }
 
-// UC обработчик команд, удовлетворяющих интерфейсу Command.
 type UC struct {
 	jwtGeneratorRepo iJWTGenerator
 	userRepo         iUserRepo
 }
 
-// NewUC возвращает новый UC.
 func NewUC(jwtGeneratorRepo iJWTGenerator, userRepo iUserRepo) *UC {
 	return &UC{
 		jwtGeneratorRepo: jwtGeneratorRepo,

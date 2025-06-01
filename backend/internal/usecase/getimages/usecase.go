@@ -23,12 +23,10 @@ type iImageRepo interface {
 	GetMany(ctx context.Context, objectIDs []uuid.UUID) ([]domain.ImageInfo, error)
 }
 
-// Добавляем интерфейс для репозитория типов китов
 type iWhaleTypeRepo interface {
 	GetWhaleTypesByIDs(ctx context.Context, ids []uuid.UUID) ([]*domain.WhaleType, error)
 }
 
-// UC обработчик команд, удовлетворяющих интерфейсу Command.
 type UC struct {
 	cfg               Config
 	humpbackWhaleRepo iHumpbackWhaleRepo

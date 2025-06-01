@@ -2,10 +2,11 @@ package minioclient
 
 import (
 	"context"
+	"net/http"
+	
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 type Config struct {
@@ -18,7 +19,7 @@ type Config struct {
 
 func NewMinioClient(ctx context.Context, cfg Config) (*minio.Client, error) {
 	customTransport := &LoggingTransport{
-		Transport: http.DefaultTransport, // или другой базовый транспорт
+		Transport: http.DefaultTransport,
 	}
 
 	client, err := minio.New(cfg.Endpoint, &minio.Options{

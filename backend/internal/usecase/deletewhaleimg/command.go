@@ -5,7 +5,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Command holds the necessary data to delete a whale image.
 type Command struct {
 	WhaleID uuid.UUID
 }

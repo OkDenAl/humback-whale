@@ -10,10 +10,8 @@ import uuid
 from datetime import datetime
 from torchvision import models
 
-# Конфигурация
 MODEL_PATH = "best_model-7.pth"
 
-# Настройка логгера
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -21,7 +19,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger("whale-detector")
 
-# Инициализация модели
 device = "cpu"
 
 model = models.efficientnet_b4(pretrained=False)
@@ -30,7 +27,6 @@ model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model.eval()
 model.to(device)
 
-# Трансформации изображений
 transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
@@ -71,14 +67,11 @@ async def recognize_whale(request: PredictionRequest):
     logger.info(f"[{request_id}] Processing request for URL: {request.url}")
     
     try:
-        # Загрузка изображения
         image = download_image(request.url)
-        
-        # Предсказание
+
         prob_humpback, prob_other = predict(image)
         result = "OK" if prob_humpback > 0.5 else "NOT_WHALE"
-        
-        # Логирование
+
         log_data = {
             "request_id": request_id,
             "prob_humpback": round(prob_humpback, 4),

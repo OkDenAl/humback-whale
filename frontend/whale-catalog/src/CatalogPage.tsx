@@ -5,7 +5,6 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 
-// Фикс для иконок маркеров
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -14,7 +13,7 @@ L.Icon.Default.mergeOptions({
 });
 
 interface WhaleType {
-    id: string; // Assuming uuid.UUID maps to string in JSON
+    id: string;
     species_eng: string;
     species_rus: string;
     family: string;
@@ -33,26 +32,22 @@ interface WhaleImage {
     longitude: number;
     latitude: number;
     description: string;
-    whale_type: WhaleType | null; // Can be null if not set
+    whale_type: WhaleType | null;
     image_url: string;
     can_edit?: boolean;
 }
 
 const processImageUrl = (url: string) => {
-    // Декодируем URL и заменяем экранированные символы
     let processedUrl = decodeURIComponent(url)
         .replace(/\\u0026/g, '&')
         .replace(/ /g, '%20');
 
-    // Если используется внутренний адрес Minio, заменяем на прокси
     if (processedUrl.includes('humpback-whale-minio:9000')) {
         processedUrl = processedUrl.replace(
             'humpback-whale-minio:9000',
             window.location.hostname + ':9000'
         );
     }
-
-    // console.log(processedUrl)
 
     return processedUrl;
 };
@@ -84,7 +79,6 @@ const getErrorMessage = (status: number, defaultMessage: string): string => {
     }
 };
 
-// Add type for cluster click event
 interface ClusterClickEvent {
     layer: {
         getBounds: () => L.LatLngBounds;
@@ -94,7 +88,6 @@ interface ClusterClickEvent {
     };
 }
 
-// Add type for cluster
 interface CustomMarkerCluster {
     getChildCount: () => number;
     getAllChildMarkers: () => L.Marker[];
@@ -104,32 +97,29 @@ const CatalogPage: React.FC = () => {
     const [filters, setFilters] = useState({
         whale_type_id: '',
         username: '',
-        limit: 10,
+        limit: 8,
         name: '',
         gender: ''
     });
     const [images, setImages] = useState<WhaleImage[]>([]);
-    const [whaleTypes, setWhaleTypes] = useState<WhaleType[]>([]); // State for whale types
-    const [whaleTypesLoading, setWhaleTypesLoading] = useState<boolean>(true); // Loading state for types
-    const [whaleTypesError, setWhaleTypesError] = useState<string>(''); // Error state for types
+    const [whaleTypes, setWhaleTypes] = useState<WhaleType[]>([]);
+    const [whaleTypesLoading, setWhaleTypesLoading] = useState<boolean>(true);
+    const [whaleTypesError, setWhaleTypesError] = useState<string>('');
     const [pagination, setPagination] = useState<{
         next: string | null;
         prev: string | null
     }>({ next: null, prev: null });
     const [loading, setLoading] = useState(true);
-    const [saveLoading, setSaveLoading] = useState(false); // Loading state for save operation
+    const [saveLoading, setSaveLoading] = useState(false);
     const [error, setError] = useState('')
-    const [modalError, setModalError] = useState(''); // Separate error state for the modal
+    const [modalError, setModalError] = useState('');
     const [selectedImage, setSelectedImage] = useState<WhaleImage | null>(null);
-    // State for delete confirmation
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
     const [imageToDeleteId, setImageToDeleteId] = useState<string | null>(null);
-    const [trackedImageId, setTrackedImageId] = useState<string | null>(null); // Track which image's filters are active
+    const [trackedImageId, setTrackedImageId] = useState<string | null>(null);
     const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
     const [deleteError, setDeleteError] = useState<string>('');
-    // State for filter panel visibility
     const [isFiltersExpanded, setIsFiltersExpanded] = useState<boolean>(true);
-    // Update editData state to include name and gender
     const [editData, setEditData] = useState({
         description: '',
         whale_type_id: '',
@@ -137,15 +127,12 @@ const CatalogPage: React.FC = () => {
         gender: ''
     });
 
-    // Add new state for cluster zoom level
     const [clusterZoom, setClusterZoom] = useState<number>(1.5);
 
-    // Add constant for zoom level when expanding clusters
     const EXPANDED_ZOOM_LEVEL = 8;
 
-    // Function to calculate distance between two points
     const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-        const R = 6371; // Earth's radius in km
+        const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = 
@@ -156,7 +143,6 @@ const CatalogPage: React.FC = () => {
         return R * c;
     };
 
-    // Function to group nearby images
     const groupNearbyImages = (images: WhaleImage[], maxDistance: number = 0.5) => {
         const groups: { [key: string]: WhaleImage[] } = {};
         
@@ -165,7 +151,6 @@ const CatalogPage: React.FC = () => {
             
             let addedToGroup = false;
             
-            // Check if image belongs to any existing group
             Object.keys(groups).forEach(groupKey => {
                 const [groupLat, groupLon] = groupKey.split(',').map(Number);
                 const distance = calculateDistance(
@@ -181,7 +166,6 @@ const CatalogPage: React.FC = () => {
                 }
             });
             
-            // If image doesn't belong to any group, create new group
             if (!addedToGroup) {
                 const key = `${image.latitude},${image.longitude}`;
                 groups[key] = [image];
@@ -191,7 +175,6 @@ const CatalogPage: React.FC = () => {
         return groups;
     };
 
-// Проверка прав пользователя
     const user = localStorage.getItem('whaleUser') ? JSON.parse(localStorage.getItem('whaleUser')!) : null;
     const isScientist = user?.is_scientist || false;
     const token = user?.token;
@@ -209,7 +192,6 @@ const CatalogPage: React.FC = () => {
         return params.toString();
     };
 
-    // Fetch whale types when component mounts
     const fetchWhaleTypes = async () => {
         setWhaleTypesLoading(true);
         setWhaleTypesError('');
@@ -230,26 +212,21 @@ const CatalogPage: React.FC = () => {
         }
     };
 
-
     const handleImageClick = (image: WhaleImage) => {
-        // Allow editing only if user is a scientist
         if (isScientist) {
             setSelectedImage(image);
-            // Set initial editData including new fields
             setEditData({
                 description: image.description || '',
-                whale_type_id: image.whale_type ? image.whale_type.id : '', // Use the ID
+                whale_type_id: image.whale_type ? image.whale_type.id : '',
                 name: image.name || '',
                 gender: image.gender || ''
             });
-            setModalError(''); // Clear previous modal errors
+            setModalError('');
         } else {
-            // Optional: Show a message or do nothing if not a scientist
             console.log("Только ученые могут редактировать.");
         }
     };
 
-// Обработчик сохранения изменений
     const handleSave = async () => {
         if (!selectedImage || !token) return;
 
@@ -338,28 +315,25 @@ const CatalogPage: React.FC = () => {
 
     const resetFilters = () => {
         setFilters({
-            whale_type_id: '', // Reset whale_type_id
+            whale_type_id: '',
             username: '',
             limit: 10,
             name: '',
             gender: ''
         });
-        setTrackedImageId(null); // Clear tracked image on manual reset
-        // Need to manually trigger fetch after resetting state
-        // buildQueryString will use the new (empty) filters
+        setTrackedImageId(null);
         fetchImages(`http://localhost:80/api/v1/public/whale/images?limit=10`);
     };
 
     useEffect(() => {
-        fetchWhaleTypes(); // Fetch types first
-        fetchImages();     // Then fetch initial images
-    }, []); // Fetch on initial mount
+        fetchWhaleTypes();
+        fetchImages();
+    }, []);
 
     const handlePagination = (url: string) => {
         fetchImages(url);
     };
 
-    // Handle changes in edit form fields
     const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setEditData(prev => ({
@@ -380,15 +354,13 @@ const CatalogPage: React.FC = () => {
         fetchImages();
     };
 
-    // Function to open delete confirmation modal
     const handleDeleteClick = (e: React.MouseEvent, imageId: string) => {
-        e.stopPropagation(); // Prevent event bubbling
+        e.stopPropagation();
         setImageToDeleteId(imageId);
-        setDeleteError(''); // Clear previous delete errors
+        setDeleteError('');
         setShowDeleteModal(true);
     };
 
-    // Function to handle confirmed deletion
     const handleConfirmDelete = async () => {
         if (!imageToDeleteId || !token) return;
 
@@ -423,33 +395,29 @@ const CatalogPage: React.FC = () => {
         }
     };
 
-    // Function to cancel deletion
     const handleCancelDelete = () => {
         setShowDeleteModal(false);
         setImageToDeleteId(null);
-        setDeleteError(''); // Clear error on cancel
+        setDeleteError('');
     };
 
-    // Function to handle track button click in map popup
     const handleTrackClick = (image: WhaleImage) => {
         const newFilters = {
             whale_type_id: image.whale_type?.id || '',
-            username: '', // Don't include username in tracking
-            limit: filters.limit, // Keep current limit
+            username: '',
+            limit: filters.limit,
             name: image.name || '',
             gender: image.gender || ''
         };
         setFilters(newFilters);
-        setTrackedImageId(image.id); // Set the currently tracked image ID
+        setTrackedImageId(image.id);
 
-        // Construct the URL with new filters
         const params = new URLSearchParams();
         if (newFilters.whale_type_id) params.append('whale_type_id', newFilters.whale_type_id);
         if (newFilters.name) params.append('name', newFilters.name);
         if (newFilters.gender) params.append('gender', newFilters.gender);
         params.append('limit', newFilters.limit.toString());
 
-        // Automatically fetch images with the new filters
         fetchImages(`http://localhost:80/api/v1/public/whale/images?${params.toString()}`);
     };
 
@@ -459,7 +427,7 @@ const CatalogPage: React.FC = () => {
             <div className="loading-text">Загружаем каталог китов...</div>
         </div>
     );
-    // Show loading indicator without replacing content if loading more images
+
     const showLoadingIndicator = (loading && images.length > 0) || saveLoading;
 
     return (
@@ -481,13 +449,11 @@ const CatalogPage: React.FC = () => {
             <br></br>
 
             <div className="filters-map-container">
-                {/* Фильтры - Now absolutely positioned */}
                 <form
                     onSubmit={handleFilterSubmit}
                     className={`filters-form ${!isFiltersExpanded ? 'collapsed' : ''}`}
                 >
-                    {/* Toggle Button */}
-                     <button
+                    <button
                         type="button"
                         className="filter-toggle-btn"
                         onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
@@ -498,7 +464,6 @@ const CatalogPage: React.FC = () => {
 
                     <h3>Фильтры поиска</h3>
 
-                    {/* Whale Type Dropdown Filter */}
                     <div className="filter-group">
                         <label>Вид кита:</label>
                         <select
@@ -517,7 +482,6 @@ const CatalogPage: React.FC = () => {
                         </select>
                     </div>
 
-                    {/* Name Filter */}
                     <div className="filter-group">
                         <label>Имя кита:</label>
                         <input
@@ -529,7 +493,6 @@ const CatalogPage: React.FC = () => {
                         />
                     </div>
 
-                    {/* Gender Filter */}
                     <div className="filter-group">
                         <label>Пол:</label>
                         <select
@@ -557,11 +520,11 @@ const CatalogPage: React.FC = () => {
                     </div>
 
                     <div className="filter-group">
-                        <label>Колиечество изображений на странице: {filters.limit}</label>
+                        <label>Количество изображений на странице: {filters.limit}</label>
                         <input
                             type="range"
                             min="1"
-                            max="50"
+                            max="30"
                             value={filters.limit}
                             onChange={(e) => setFilters({...filters, limit: Number(e.target.value)})}
                             className="limit-slider"
@@ -578,7 +541,6 @@ const CatalogPage: React.FC = () => {
                     </div>
                 </form>
 
-                {/* Карта */}
                 <div className="map-container">
                     <MapContainer
                         center={[61, 90]}
@@ -608,7 +570,6 @@ const CatalogPage: React.FC = () => {
                                 const childMarkers = cluster.getAllChildMarkers();
                                 let totalImages = 0;
 
-                                // Count all images in the cluster
                                 childMarkers.forEach(marker => {
                                     const popupContent = marker.getPopup()?.getContent();
                                     if (typeof popupContent === 'string') {
@@ -625,7 +586,6 @@ const CatalogPage: React.FC = () => {
                                     }
                                 });
 
-                                // Get the first marker's image URL from the marker's custom icon
                                 const firstMarker = childMarkers[0];
                                 const iconHtml = (firstMarker.options.icon as L.DivIcon).options.html;
                                 const firstImageUrl = typeof iconHtml === 'string' 
@@ -651,7 +611,7 @@ const CatalogPage: React.FC = () => {
                                     html: `<div class="custom-marker-icon">
                                         <img src="${processImageUrl(firstImage.image_url)}" alt="Whale"/>
                                         ${group.length > 1 ? `
-                                            <div class="marker-count-badge" title="${group.length} изображений в этой точке">
+                                            <div class="marker-count-badge" title="${group.length} в этой точке">
                                                 <span class="marker-count">${group.length}</span>
                                             </div>
                                         ` : ''}
@@ -726,16 +686,15 @@ const CatalogPage: React.FC = () => {
                         className={`${isScientist ? 'editable image-card' : 'image-card'}`}
                         onClick={() => handleImageClick(image)}
                     >
-                        {/* Add delete button for scientists */}
                         {isScientist && (
                             <button
                                 className="delete-btn"
                                 onClick={(e) => {
-                                    e.stopPropagation(); // Prevent event bubbling
+                                    e.stopPropagation();
                                     handleDeleteClick(e, image.id);
                                 }}
                                 title="Удалить изображение"
-                                style={{ display: 'flex' }} // Ensure button is displayed
+                                style={{ display: 'flex' }}
                             >
                                 ×
                             </button>
@@ -749,21 +708,22 @@ const CatalogPage: React.FC = () => {
                             }}
                         />
                         <div className="image-meta">
-                            {/* Display name if available as title */}
-                            {image.name && <h2 className="whale-name">{image.name}</h2>}
+                            <h2 className="whale-name">{image.name || "Без имени"}</h2>
 
-                            {/* Taxonomy Box */}
-                            {image.whale_type && (
-                                <div className="taxonomy-box">
-                                    {image.whale_type.family && <p><strong>Семейство:</strong> {image.whale_type.family}</p>}
-                                    {image.whale_type.genus && <p><strong>Род:</strong> {image.whale_type.genus}</p>}
-                                    {image.whale_type.species_eng && <p><strong>Вид (Lat):</strong> {image.whale_type.species_eng}</p>}
-                                    {image.whale_type.species_rus && <p><strong>Вид (Rus):</strong> {image.whale_type.species_rus}</p>}
-                                    {image.whale_type.conservation_status && <p><strong>Статус:</strong> {image.whale_type.conservation_status}</p>}
-                                </div>
-                            )}
+                            <div className="taxonomy-box">
+                                {image.whale_type ? (
+                                    <>
+                                        {image.whale_type.family && <p><strong>Семейство:</strong> {image.whale_type.family}</p>}
+                                        {image.whale_type.genus && <p><strong>Род:</strong> {image.whale_type.genus}</p>}
+                                        {image.whale_type.species_eng && <p><strong>Вид (Lat):</strong> {image.whale_type.species_eng}</p>}
+                                        {image.whale_type.species_rus && <p><strong>Вид (Rus):</strong> {image.whale_type.species_rus}</p>}
+                                        {image.whale_type.conservation_status && <p><strong>Статус:</strong> {image.whale_type.conservation_status}</p>}
+                                    </>
+                                ) : (
+                                    <p><strong>Вид:</strong> Вид не определен</p>
+                                )}
+                            </div>
 
-                            {/* Display gender with emoji */}
                             {image.gender && (
                                 <p className="whale-gender">
                                     <strong>Пол:</strong>
@@ -773,7 +733,6 @@ const CatalogPage: React.FC = () => {
                                 </p>
                             )}
 
-                            {/* Display Description */}
                             <p className="descr"><strong>Описание:</strong> {image.description || "Без описания"}</p>
 
                             <div className="meta-info">
@@ -884,7 +843,6 @@ const CatalogPage: React.FC = () => {
                 </div>
             )}
 
-            {/* Delete Confirmation Modal */}
             {showDeleteModal && (
                 <div className="confirmation-modal1">
                     <div className="confirmation-modal-content1">

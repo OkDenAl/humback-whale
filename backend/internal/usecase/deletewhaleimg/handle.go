@@ -9,7 +9,6 @@ import (
 	"github.com/OkDenAl/humback-whale/internal/integrationerror"
 )
 
-// Handle executes the use case logic.
 func (uc *UC) Handle(ctx context.Context, cmd Command) error {
 	whale, err := uc.whaleRepo.GetWhaleByID(ctx, cmd.WhaleID)
 	if err != nil {

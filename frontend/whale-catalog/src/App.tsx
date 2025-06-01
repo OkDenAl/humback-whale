@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import AppIcon from './assets/whale.jpg'; // Импорт иконки
+import AppIcon from './assets/whale.jpg';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import CatalogPage from './CatalogPage';
-import AdminPanelPage from './AdminPanelPage'; // Добавляем импорт новой страницы
-import AboutPage from './AboutPage'; // Добавляем импорт новой страницы
+import AdminPanelPage from './AdminPanelPage';
+import AboutPage from './AboutPage';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet'
+import { FaSignInAlt, FaUserPlus, FaEnvelope } from 'react-icons/fa';
 
-// Фикс для иконок маркеров
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -26,24 +26,20 @@ const MapClickHandler = ({ onMapClick }: { onMapClick: (lat: number, lng: number
     return null;
 };
 
-// Добавим иконку меню для мобильной версии
-import { FaSignInAlt, FaUserPlus, FaEnvelope } from 'react-icons/fa';
-
 interface User {
     author_id: string;
     token: string;
     username: string;
-    is_scientist: boolean; // Добавляем опциональное поле
+    is_scientist: boolean;
 }
 
-// Define the WhaleType interface based on backend structure
 interface WhaleType {
-	id: string; // Assuming uuid.UUID maps to string in JSON
-	species_eng: string;
-	species_rus: string;
-	family: string;
-	genus: string;
-	conservation_status: string;
+    id: string;
+    species_eng: string;
+    species_rus: string;
+    family: string;
+    genus: string;
+    conservation_status: string;
 }
 
 interface FormData {
@@ -51,11 +47,11 @@ interface FormData {
     preview: string | null;
     latitude: string;
     longitude: string;
-    saw_at: string; // Новое поле
-    description: string; // Added description field
-    name: string; // Added name field (for scientists)
-    gender: string; // Added gender field (for scientists)
-    whale_type_id: string; // Added whale type ID field (for scientists)
+    saw_at: string;
+    description: string;
+    name: string;
+    gender: string;
+    whale_type_id: string;
 }
 
 interface AuthModalProps {
@@ -85,6 +81,8 @@ const getErrorMessage = (status: number, defaultMessage: string): string => {
             return 'У вас нет прав для выполнения этого действия.';
         case 404:
             return 'Запрашиваемый ресурс не найден.';
+        case 406:
+            return 'Неверный пароль.Попробуйте ещё раз.';
         case 409:
             return 'Пользователь с таким email или именем пользователя уже существует.';
         case 422:
@@ -116,7 +114,7 @@ const App: React.FC = () => {
         description: '',
         name: '',
         gender: '',
-        whale_type_id: '' // Initialize whale type ID
+        whale_type_id: ''
     });
     const [whaleTypes, setWhaleTypes] = useState<WhaleType[]>([]);
     const [whaleTypesLoading, setWhaleTypesLoading] = useState<boolean>(true);
@@ -134,11 +132,9 @@ const App: React.FC = () => {
             setUser(JSON.parse(savedUser));
         }
 
-        // Check if we have previous form data
         const savedFormData = localStorage.getItem('previousFormData');
         setHasPreviousData(!!savedFormData);
 
-        // Fetch whale types when component mounts
         const fetchWhaleTypes = async () => {
             setWhaleTypesLoading(true);
             setWhaleTypesError('');
@@ -232,7 +228,7 @@ const App: React.FC = () => {
         const file = e.target.files?.[0];
         if (file) {
             setIsPreviewLoading(true);
-            setTimeout(() => { // Имитация загрузки для демонстрации
+            setTimeout(() => {
                 setFormData({
                     ...formData,
                     image: file,
@@ -242,7 +238,6 @@ const App: React.FC = () => {
             }, 1000);
         }
     };
-
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -279,7 +274,6 @@ const App: React.FC = () => {
                 throw new Error(errorMessage);
             }
 
-            // Store form data in localStorage (excluding image and preview)
             const dataToStore = {
                 latitude: formData.latitude,
                 longitude: formData.longitude,
@@ -287,7 +281,8 @@ const App: React.FC = () => {
                 description: formData.description,
                 name: formData.name,
                 gender: formData.gender,
-                whale_type_id: formData.whale_type_id
+                whale_type_id: formData.whale_type_id,
+                timestamp: Date.now()
             };
             localStorage.setItem('previousFormData', JSON.stringify(dataToStore));
             setHasPreviousData(true);
@@ -312,14 +307,53 @@ const App: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        const checkPreviousData = () => {
+            const savedData = localStorage.getItem('previousFormData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                const now = Date.now();
+                const fifteenMinutes = 15 * 60 * 1000;
+                
+                if (data.timestamp && (now - data.timestamp) <= fifteenMinutes) {
+                    setHasPreviousData(true);
+                } else {
+                    setHasPreviousData(false);
+                    localStorage.removeItem('previousFormData');
+                }
+            } else {
+                setHasPreviousData(false);
+            }
+        };
+
+        checkPreviousData();
+        const interval = setInterval(checkPreviousData, 60000);
+
+        return () => clearInterval(interval);
+    }, []);
+
     const handleRestorePreviousData = () => {
         const savedData = localStorage.getItem('previousFormData');
         if (savedData) {
-            const previousData = JSON.parse(savedData);
-            setFormData(prev => ({
-                ...prev,
-                ...previousData
-            }));
+            const data = JSON.parse(savedData);
+            const now = Date.now();
+            const fifteenMinutes = 15 * 60 * 1000;
+            
+            if (data.timestamp && (now - data.timestamp) <= fifteenMinutes) {
+                setFormData(prev => ({
+                    ...prev,
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                    saw_at: data.saw_at,
+                    description: data.description,
+                    name: data.name,
+                    gender: data.gender,
+                    whale_type_id: data.whale_type_id
+                }));
+            } else {
+                setHasPreviousData(false);
+                localStorage.removeItem('previousFormData');
+            }
         }
     };
 
@@ -438,6 +472,7 @@ const App: React.FC = () => {
                                                     placeholder="e.g. 34.0522"
                                                     value={formData.latitude}
                                                     onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                                                    required
                                                 />
                                             </div>
                                             <div className="input-group">
@@ -448,6 +483,7 @@ const App: React.FC = () => {
                                                     placeholder="e.g. -118.2437"
                                                     value={formData.longitude}
                                                     onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                                                    required
                                                 />
                                             </div>
                                         </div>
@@ -569,7 +605,7 @@ const App: React.FC = () => {
                                         <button
                                             type="submit"
                                             className="submit-btn"
-                                            disabled={isLoading || !formData.image}
+                                            disabled={isLoading || !formData.image || !formData.latitude || !formData.longitude}
                                         >
                                             {isLoading ? (
                                                 <>
@@ -659,25 +695,21 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Валидация email
         if (!/^\S+@\S+\.\S+$/.test(credentials.email)) {
             alert('Некорректный email адрес.');
             return;
         }
-        // Валидация длины пароля
         if (credentials.password.length < 6) {
             alert('Пароль должен содержать не менее 6 символов.');
             return;
         }
-        // Валидация обязательных полей для ученого при регистрации
         if (authType === 'register' && credentials.isScientist) {
           if (!credentials.degree || !credentials.rank || !credentials.placeOfWork) {
             alert('Пожалуйста, заполните все поля для ученого: Ученая степень, Звание, Место работы.');
-            return; // Прерываем отправку
+            return;
           }
         }
 
-        // Если все проверки пройдены
         onAuth(credentials);
     };
 
@@ -716,7 +748,6 @@ const AuthModal: React.FC<AuthModalProps> = ({
                         className="auth-input"
                     />
 
-                    {/* Поля для регистрации */}
                     {authType === 'register' && (
                         <>
                             <div className="role-selection">
@@ -731,7 +762,6 @@ const AuthModal: React.FC<AuthModalProps> = ({
                                 </label>
                             </div>
 
-                            {/* Дополнительные поля для ученых */}
                             {credentials.isScientist && (
                                 <>
                                      <input
@@ -782,11 +812,10 @@ const AuthModal: React.FC<AuthModalProps> = ({
     );
 };
 
-// Создаем новый компонент AuthWarning
 const AuthWarning: React.FC = () => {
     return (
         <div className="auth-warning">
-            ⚠️ Please sign in to upload photos
+            ⚠️ Пожалуйста, войдите в систему, чтобы загрузить фотографии
         </div>
     );
 };

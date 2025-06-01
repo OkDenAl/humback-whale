@@ -33,7 +33,7 @@ type iLoginUC interface {
 }
 
 type iRegisterUC interface {
-	Handle(ctx context.Context, cmd register.Command) (string, error)
+	Handle(ctx context.Context, cmd register.Command) (register.Result, error)
 }
 
 type iGetWhaleTypesUC interface {
