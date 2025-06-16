@@ -31,9 +31,9 @@ import (
 	"github.com/OkDenAl/humback-whale/pkg/postgresclient"
 )
 
-// @title           Humpback whale recognition service
+// @title           Humpback whale catalog service
 // @version         1.0
-// @description     Humpback whale recognition - it is the service for recognize humpback whale and store it in catalog.
+// @description     Humpback whale catalog - it is the service for recognize humpback whale and store it in catalog.
 // @contact.name   humpback-whale
 // @contact.url    https://github.com/OkDenAl/humback-whale
 // @BasePath  /api/v1

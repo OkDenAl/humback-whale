@@ -12,10 +12,10 @@ import (
 
 // @BasePath /api/v1
 // getWhaleTypes godoc
-// @Summary get all whale types
+// @Summary Получить список всех видов китов
 // @Schemes
 // @Description Get a list of all available whale types
-// @Tags Whale Types
+// @Tags Вид кита
 // @Produce json
 // @Success 200 {object} getWhaleTypesResp
 // @Failure 500 {object} httpError

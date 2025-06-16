@@ -530,7 +530,7 @@ const App: React.FC = () => {
                                                 required
                                             />
                                             <div className="upload-area">
-                                                <h3>{formData.preview ? 'Изменить изображение' : 'Загрузить изображение'}</h3>
+                                                <h3>{formData.preview ? 'Изменить изображение (jpg, jpeg)' : 'Загрузить изображение (jpg, jpeg)'}</h3>
                                             </div>
                                         </label>
 

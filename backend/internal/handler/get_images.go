@@ -16,10 +16,9 @@ import (
 
 // @BasePath /api/v1
 // getImages godoc
-// @Summary get images with filters
+// @Summary Получить список наблюдений с фильтрами
 // @Schemes
-// @Description get whale images with pagination and filters
-// @Tags Whale
+// @Tags Наблюдение кита
 // @Param limit query int true "Limit per page"
 // @Param cursor query string false "Timestamp cursor (RFC3339Nano format) for pagination"
 // @Param username query string false "Filter by author username"

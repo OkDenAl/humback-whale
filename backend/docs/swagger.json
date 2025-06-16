@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Humpback whale recognition - it is the service for recognize humpback whale and store it in catalog.",
-        "title": "Humpback whale recognition service",
+        "description": "Humpback whale catalog - it is the service for recognize humpback whale and store it in catalog.",
+        "title": "Humpback whale catalog service",
         "contact": {
             "name": "humpback-whale",
             "url": "https://github.com/OkDenAl/humback-whale"
@@ -12,6 +12,50 @@
     "host": "localhost:80",
     "basePath": "/api/v1",
     "paths": {
+        "/private/whale/types": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Вид кита"
+                ],
+                "summary": "Создаёт новый вид кита или обновляет существующий",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003ctoken\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.httpError"
+                        }
+                    }
+                }
+            }
+        },
         "/private/whale/types/{whale_type_id}": {
             "delete": {
                 "description": "Deletes a whale type record.",
@@ -19,9 +63,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Whale Types"
+                    "Вид кита"
                 ],
-                "summary": "Delete a whale type",
+                "summary": "Удаляет вид кита",
                 "parameters": [
                     {
                         "type": "string",
@@ -66,14 +110,13 @@
         },
         "/private/whale/update": {
             "post": {
-                "description": "update images info",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Whale"
+                    "Наблюдение кита"
                 ],
-                "summary": "update images info",
+                "summary": "Обновить информацию по наблюдению",
                 "parameters": [
                     {
                         "description": "Req body json",
@@ -125,7 +168,6 @@
         },
         "/private/whale/upload": {
             "post": {
-                "description": "upload whale image",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -133,9 +175,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Whale"
+                    "Наблюдение кита"
                 ],
-                "summary": "upload whale image",
+                "summary": "Загрузить наблюдение",
                 "parameters": [
                     {
                         "type": "file",
@@ -206,14 +248,13 @@
         },
         "/private/whale/{whale_id}": {
             "delete": {
-                "description": "Deletes a whale image record and the corresponding image file from storage.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Whale"
+                    "Наблюдение кита"
                 ],
-                "summary": "Delete a whale image",
+                "summary": "Удаляет наблюдение кита",
                 "parameters": [
                     {
                         "type": "string",
@@ -264,7 +305,6 @@
         },
         "/public/auth/login": {
             "post": {
-                "description": "login user",
                 "consumes": [
                     "application/json"
                 ],
@@ -272,9 +312,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Аутентификация"
                 ],
-                "summary": "login user",
+                "summary": "Авторизация пользователя в системе",
                 "parameters": [
                     {
                         "description": "JSON",
@@ -322,7 +362,6 @@
         },
         "/public/auth/register": {
             "post": {
-                "description": "register user",
                 "consumes": [
                     "application/json"
                 ],
@@ -330,9 +369,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Аутентификация"
                 ],
-                "summary": "register user",
+                "summary": "Регистрация пользователя в системе",
                 "parameters": [
                     {
                         "description": "JSON",
@@ -388,9 +427,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Аутентификация"
                 ],
-                "summary": "reset password",
+                "summary": "Сброс пароля",
                 "parameters": [
                     {
                         "description": "JSON",
@@ -426,7 +465,6 @@
         },
         "/public/auth/send-reset-password": {
             "post": {
-                "description": "send reset password email to user",
                 "consumes": [
                     "application/json"
                 ],
@@ -434,9 +472,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Аутентификация"
                 ],
-                "summary": "send reset password email",
+                "summary": "Отправка письма со сбросом пароля",
                 "parameters": [
                     {
                         "description": "JSON",
@@ -472,14 +510,13 @@
         },
         "/public/whale/images": {
             "get": {
-                "description": "get whale images with pagination and filters",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Whale"
+                    "Наблюдение кита"
                 ],
-                "summary": "get images with filters",
+                "summary": "Получить список наблюдений с фильтрами",
                 "parameters": [
                     {
                         "type": "integer",
@@ -560,56 +597,14 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Whale Types"
+                    "Вид кита"
                 ],
-                "summary": "get all whale types",
+                "summary": "Получить список всех видов китов",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/handler.getWhaleTypesResp"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.httpError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Whale Types"
-                ],
-                "summary": "create whale type or update existing whale type",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003ctoken\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.httpError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/handler.httpError"
                         }
                     },
                     "500": {

@@ -172,15 +172,13 @@ info:
   contact:
     name: humpback-whale
     url: https://github.com/OkDenAl/humback-whale
-  description: Humpback whale recognition - it is the service for recognize humpback
-    whale and store it in catalog.
-  title: Humpback whale recognition service
+  description: Humpback whale catalog - it is the service for recognize humpback whale
+    and store it in catalog.
+  title: Humpback whale catalog service
   version: "1.0"
 paths:
   /private/whale/{whale_id}:
     delete:
-      description: Deletes a whale image record and the corresponding image file from
-        storage.
       parameters:
       - default: Bearer <token>
         description: Insert your access token
@@ -214,9 +212,38 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: Delete a whale image
+      summary: Удаляет наблюдение кита
       tags:
-      - Whale
+      - Наблюдение кита
+  /private/whale/types:
+    post:
+      parameters:
+      - default: Bearer <token>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.httpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.httpError'
+      summary: Создаёт новый вид кита или обновляет существующий
+      tags:
+      - Вид кита
   /private/whale/types/{whale_type_id}:
     delete:
       description: Deletes a whale type record.
@@ -249,12 +276,11 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: Delete a whale type
+      summary: Удаляет вид кита
       tags:
-      - Whale Types
+      - Вид кита
   /private/whale/update:
     post:
-      description: update images info
       parameters:
       - description: Req body json
         in: body
@@ -288,14 +314,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: update images info
+      summary: Обновить информацию по наблюдению
       tags:
-      - Whale
+      - Наблюдение кита
   /private/whale/upload:
     post:
       consumes:
       - multipart/form-data
-      description: upload whale image
       parameters:
       - description: File to upload
         in: formData
@@ -342,14 +367,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: upload whale image
+      summary: Загрузить наблюдение
       tags:
-      - Whale
+      - Наблюдение кита
   /public/auth/login:
     post:
       consumes:
       - application/json
-      description: login user
       parameters:
       - description: JSON
         in: body
@@ -380,14 +404,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: login user
+      summary: Авторизация пользователя в системе
       tags:
-      - Auth
+      - Аутентификация
   /public/auth/register:
     post:
       consumes:
       - application/json
-      description: register user
       parameters:
       - description: JSON
         in: body
@@ -418,9 +441,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: register user
+      summary: Регистрация пользователя в системе
       tags:
-      - Auth
+      - Аутентификация
   /public/auth/reset-password:
     post:
       consumes:
@@ -448,14 +471,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: reset password
+      summary: Сброс пароля
       tags:
-      - Auth
+      - Аутентификация
   /public/auth/send-reset-password:
     post:
       consumes:
       - application/json
-      description: send reset password email to user
       parameters:
       - description: JSON
         in: body
@@ -478,12 +500,11 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: send reset password email
+      summary: Отправка письма со сбросом пароля
       tags:
-      - Auth
+      - Аутентификация
   /public/whale/images:
     get:
-      description: get whale images with pagination and filters
       parameters:
       - description: Limit per page
         in: query
@@ -533,9 +554,9 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: get images with filters
+      summary: Получить список наблюдений с фильтрами
       tags:
-      - Whale
+      - Наблюдение кита
   /public/whale/types:
     get:
       description: Get a list of all available whale types
@@ -550,35 +571,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.httpError'
-      summary: get all whale types
+      summary: Получить список всех видов китов
       tags:
-      - Whale Types
-    post:
-      parameters:
-      - default: Bearer <token>
-        description: Insert your access token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ""
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.httpError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/handler.httpError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.httpError'
-      summary: create whale type or update existing whale type
-      tags:
-      - Whale Types
+      - Вид кита
 swagger: "2.0"

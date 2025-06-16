@@ -11,10 +11,9 @@ import (
 
 // @BasePath /api/v1/
 // register godoc
-// @Summary register user
+// @Summary Регистрация пользователя в системе
 // @Schemes
-// @Description register user
-// @Tags Auth
+// @Tags Аутентификация
 // @Accept application/json
 // @Produce json
 // @Param   text body reqRegister  true  "JSON"

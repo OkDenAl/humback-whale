@@ -12,16 +12,16 @@ import (
 
 // @BasePath /api/v1
 // createWhaleType godoc
-// @Summary create whale type or update existing whale type
+// @Summary Создаёт новый вид кита или обновляет существующий
 // @Schemes
-// @Tags Whale Types
+// @Tags Вид кита
 // @Param Authorization header string true "Insert your access token" default(Bearer <token>)
 // @Produce json
 // @Success 200
 // @Failure 400 {object} httpError
 // @Failure 401 {object} httpError
 // @Failure 500 {object} httpError
-// @Router /public/whale/types [post]
+// @Router /private/whale/types [post]
 func (h Handler) createWhaleType() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logger.New()

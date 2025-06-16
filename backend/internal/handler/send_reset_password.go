@@ -13,10 +13,9 @@ import (
 
 // @BasePath /api/v1/
 // sendResetPassword godoc
-// @Summary send reset password email
+// @Summary Отправка письма со сбросом пароля
 // @Schemes
-// @Description send reset password email to user
-// @Tags Auth
+// @Tags Аутентификация
 // @Accept application/json
 // @Produce json
 // @Param   text body sendResetPasswordRequest  true  "JSON"

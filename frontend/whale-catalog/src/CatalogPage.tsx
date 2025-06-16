@@ -808,8 +808,8 @@ const CatalogPage: React.FC = () => {
                                     onChange={handleEditChange}
                                     disabled={whaleTypesLoading}
                                 >
-                                    <option value="" disabled>
-                                        {whaleTypesLoading ? "Загрузка видов..." : "Выберите вид"}
+                                    <option value="">
+                                        {whaleTypesLoading ? "Загрузка видов..." : "Не выбран"}
                                     </option>
                                     {!whaleTypesLoading && whaleTypes.map((type) => (
                                         <option key={type.id} value={type.id}>

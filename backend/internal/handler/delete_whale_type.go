@@ -10,10 +10,10 @@ import (
 
 // @BasePath /api/v1
 // deleteWhaleType godoc
-// @Summary Delete a whale type
+// @Summary Удаляет вид кита
 // @Schemes
 // @Description Deletes a whale type record.
-// @Tags Whale Types
+// @Tags Вид кита
 // @Param Authorization header string true "Insert your access token" default(Bearer <token>)
 // @Param whale_type_id path string true "Whale Type ID (UUID)"
 // @Produce json

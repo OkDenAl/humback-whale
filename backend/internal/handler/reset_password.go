@@ -13,10 +13,10 @@ import (
 
 // @BasePath /api/v1/
 // resetPassword godoc
-// @Summary reset password
+// @Summary Сброс пароля
 // @Schemes
 // @Description reset password using token
-// @Tags Auth
+// @Tags Аутентификация
 // @Accept application/json
 // @Produce json
 // @Param   text body resetPasswordRequest  true  "JSON"

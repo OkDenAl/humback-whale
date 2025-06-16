@@ -18,10 +18,9 @@ import (
 
 // @BasePath /api/v1
 // uploadImg godoc
-// @Summary upload whale image
+// @Summary Загрузить наблюдение
 // @Schemes
-// @Description upload whale image
-// @Tags Whale
+// @Tags Наблюдение кита
 // @Accept multipart/form-data
 // @Param image formData file true "File to upload"
 // @Param latitude formData number false "Latitude"

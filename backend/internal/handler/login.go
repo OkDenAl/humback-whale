@@ -13,10 +13,9 @@ import (
 
 // @BasePath /api/v1/
 // login godoc
-// @Summary login user
+// @Summary Авторизация пользователя в системе
 // @Schemes
-// @Description login user
-// @Tags Auth
+// @Tags Аутентификация
 // @Accept application/json
 // @Produce json
 // @Param   text body reqLogin  true  "JSON"

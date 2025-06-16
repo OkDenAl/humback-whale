@@ -12,10 +12,9 @@ import (
 
 // @BasePath /api/v1
 // deleteWhaleImage godoc
-// @Summary Delete a whale image
+// @Summary Удаляет наблюдение кита
 // @Schemes
-// @Description Deletes a whale image record and the corresponding image file from storage.
-// @Tags Whale
+// @Tags Наблюдение кита
 // @Param Authorization header string true "Insert your access token" default(Bearer <token>)
 // @Param whale_id path string true "Whale Image ID (UUID)"
 // @Produce json

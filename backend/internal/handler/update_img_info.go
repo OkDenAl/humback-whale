@@ -13,10 +13,9 @@ import (
 
 // @BasePath /api/v1
 // updateImgInfo godoc
-// @Summary update images info
+// @Summary Обновить информацию по наблюдению
 // @Schemes
-// @Description update images info
-// @Tags Whale
+// @Tags Наблюдение кита
 // @Param limit body updateImageInfoReq true "Req body json"
 // @Param Authorization header string true "authorization bearer token"
 // @Produce json
