@@ -8,10 +8,9 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
-      POSTGRES_DB: diploma-humpback-whale
+      POSTGRES_DB: humpback-whale
     volumes:
       - ${PWD}/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./dbdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks: [backend]

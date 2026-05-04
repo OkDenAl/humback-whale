@@ -1,2 +1,2 @@
-CREATE SCHEMA diploma_humpback_whale;
-ALTER ROLE postgres SET search_path = diploma_humpback_whale;
+CREATE SCHEMA humpback_whale;
+ALTER ROLE postgres SET search_path = humpback_whale;

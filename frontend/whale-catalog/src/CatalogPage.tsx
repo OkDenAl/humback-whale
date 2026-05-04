@@ -1,42 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './CatalogPage.css';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import MarkerClusterGroup from 'react-leaflet-cluster';
+import TrackingMap from './TrackingMap';
+import { WhaleType, WhaleImage } from './whale.ts';
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-interface WhaleType {
-    id: string;
-    species_eng: string;
-    species_rus: string;
-    family: string;
-    genus: string;
-    conservation_status: string;
-}
-
-interface WhaleImage {
-    id: string;
-    author_id: string;
-    username: string;
-    name: string;
-    gender: string;
-    created_at: string;
-    saw_at: string;
-    longitude: number;
-    latitude: number;
-    description: string;
-    whale_type: WhaleType | null;
-    image_url: string;
-    can_edit?: boolean;
-}
-
+// Вспомогательные функции (оставлены, т.к. используются для обработки изображений в сетке и ошибок API)
 const processImageUrl = (url: string) => {
     let processedUrl = decodeURIComponent(url)
         .replace(/\\u0026/g, '&')
@@ -79,21 +46,8 @@ const getErrorMessage = (status: number, defaultMessage: string): string => {
     }
 };
 
-interface ClusterClickEvent {
-    layer: {
-        getBounds: () => L.LatLngBounds;
-    };
-    target: {
-        _map: L.Map;
-    };
-}
-
-interface CustomMarkerCluster {
-    getChildCount: () => number;
-    getAllChildMarkers: () => L.Marker[];
-}
-
 const CatalogPage: React.FC = () => {
+    // Состояния фильтров
     const [filters, setFilters] = useState({
         whale_type_id: '',
         username: '',
@@ -111,12 +65,11 @@ const CatalogPage: React.FC = () => {
     }>({ next: null, prev: null });
     const [loading, setLoading] = useState(true);
     const [saveLoading, setSaveLoading] = useState(false);
-    const [error, setError] = useState('')
+    const [error, setError] = useState('');
     const [modalError, setModalError] = useState('');
     const [selectedImage, setSelectedImage] = useState<WhaleImage | null>(null);
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
     const [imageToDeleteId, setImageToDeleteId] = useState<string | null>(null);
-    const [trackedImageId, setTrackedImageId] = useState<string | null>(null);
     const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
     const [deleteError, setDeleteError] = useState<string>('');
     const [isFiltersExpanded, setIsFiltersExpanded] = useState<boolean>(true);
@@ -127,58 +80,14 @@ const CatalogPage: React.FC = () => {
         gender: ''
     });
 
-    const [clusterZoom, setClusterZoom] = useState<number>(1.5);
-
-    const EXPANDED_ZOOM_LEVEL = 8;
-
-    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-        const R = 6371;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = 
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-    };
-
-    const groupNearbyImages = (images: WhaleImage[], maxDistance: number = 0.5) => {
-        const groups: { [key: string]: WhaleImage[] } = {};
-        
-        images.forEach(image => {
-            if (!image.latitude || !image.longitude) return;
-            
-            let addedToGroup = false;
-            
-            Object.keys(groups).forEach(groupKey => {
-                const [groupLat, groupLon] = groupKey.split(',').map(Number);
-                const distance = calculateDistance(
-                    image.latitude,
-                    image.longitude,
-                    groupLat,
-                    groupLon
-                );
-                
-                if (distance <= maxDistance) {
-                    groups[groupKey].push(image);
-                    addedToGroup = true;
-                }
-            });
-            
-            if (!addedToGroup) {
-                const key = `${image.latitude},${image.longitude}`;
-                groups[key] = [image];
-            }
-        });
-        
-        return groups;
-    };
+    // Состояние для включения режима построения маршрута
+    const [routeEnabled, setRouteEnabled] = useState<boolean>(false);
 
     const user = localStorage.getItem('whaleUser') ? JSON.parse(localStorage.getItem('whaleUser')!) : null;
     const isScientist = user?.is_scientist || false;
     const token = user?.token;
 
+    // Построение строки запроса для фильтров
     const buildQueryString = () => {
         const params = new URLSearchParams();
         if (filters.whale_type_id) params.append('whale_type_id', filters.whale_type_id);
@@ -189,6 +98,7 @@ const CatalogPage: React.FC = () => {
         return params.toString();
     };
 
+    // Загрузка списка видов китов
     const fetchWhaleTypes = async () => {
         setWhaleTypesLoading(true);
         setWhaleTypesError('');
@@ -209,6 +119,79 @@ const CatalogPage: React.FC = () => {
         }
     };
 
+    // Загрузка изображений
+    const fetchImages = async (url?: string) => {
+        setError('');
+        setLoading(true);
+        try {
+            url = url || `http://localhost:80/api/v1/public/whale/images?${buildQueryString()}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                const errorMessage = getErrorMessage(response.status, 'Не удалось загрузить изображения');
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+
+            const processedImages = data.whale_images.map((img: WhaleImage) => ({
+                ...img,
+                image_url: processImageUrl(img.image_url),
+                whale_type: img.whale_type && img.whale_type.id ? img.whale_type : null
+            }));
+
+            setImages(processedImages);
+            setPagination({
+                next: data.next_page_url,
+                prev: data.prev_page_url
+            });
+
+        } catch (err: any) {
+            setError(err.message || 'Ошибка загрузки изображений');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Сброс фильтров
+    const resetFilters = () => {
+        setFilters({
+            whale_type_id: '',
+            username: '',
+            limit: 10,
+            name: '',
+            gender: ''
+        });
+        setRouteEnabled(false);
+        fetchImages(`http://localhost:80/api/v1/public/whale/images?limit=10`);
+    };
+
+    // Загрузка начальных данных
+    useEffect(() => {
+        fetchWhaleTypes();
+        fetchImages();
+    }, []);
+
+    // Обработчики пагинации
+    const handlePagination = (url: string) => {
+        fetchImages(url);
+    };
+
+    // Обработчики изменения фильтров
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        setFilters({
+            ...filters,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    // Отправка формы фильтров
+    const handleFilterSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        fetchImages();
+    };
+
+    // Клик по карточке изображения (для учёных – открыть модалку редактирования)
     const handleImageClick = (image: WhaleImage) => {
         if (isScientist) {
             setSelectedImage(image);
@@ -224,6 +207,7 @@ const CatalogPage: React.FC = () => {
         }
     };
 
+    // Сохранение изменений
     const handleSave = async () => {
         if (!selectedImage || !token) return;
 
@@ -265,7 +249,7 @@ const CatalogPage: React.FC = () => {
                         whale_type: updatedWhaleType,
                         name: editData.name,
                         gender: editData.gender
-                      }
+                    }
                     : img
             ));
             setSelectedImage(null);
@@ -277,60 +261,7 @@ const CatalogPage: React.FC = () => {
         }
     };
 
-    const fetchImages = async (url?: string) => {
-        setError('');
-        setLoading(true);
-        try {
-            url = url || `http://localhost:80/api/v1/public/whale/images?${buildQueryString()}`;
-            const response = await fetch(url);
-
-            if (!response.ok) {
-                const errorMessage = getErrorMessage(response.status, 'Не удалось загрузить изображения');
-                throw new Error(errorMessage);
-            }
-
-            const data = await response.json();
-
-            const processedImages = data.whale_images.map((img: WhaleImage) => ({
-                ...img,
-                image_url: processImageUrl(img.image_url),
-                whale_type: img.whale_type && img.whale_type.id ? img.whale_type : null
-            }));
-
-            setImages(processedImages);
-            setPagination({
-                next: data.next_page_url,
-                prev: data.prev_page_url
-            });
-
-        } catch (err: any) {
-            setError(err.message || 'Ошибка загрузки изображений');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const resetFilters = () => {
-        setFilters({
-            whale_type_id: '',
-            username: '',
-            limit: 10,
-            name: '',
-            gender: ''
-        });
-        setTrackedImageId(null);
-        fetchImages(`http://localhost:80/api/v1/public/whale/images?limit=10`);
-    };
-
-    useEffect(() => {
-        fetchWhaleTypes();
-        fetchImages();
-    }, []);
-
-    const handlePagination = (url: string) => {
-        fetchImages(url);
-    };
-
+    // Изменение полей редактирования
     const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setEditData(prev => ({
@@ -339,18 +270,7 @@ const CatalogPage: React.FC = () => {
         }));
     };
 
-    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFilters({
-            ...filters,
-            [e.target.name]: e.target.value
-        });
-    };
-
-    const handleFilterSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        fetchImages();
-    };
-
+    // Клик по кнопке удаления
     const handleDeleteClick = (e: React.MouseEvent, imageId: string) => {
         e.stopPropagation();
         setImageToDeleteId(imageId);
@@ -358,6 +278,7 @@ const CatalogPage: React.FC = () => {
         setShowDeleteModal(true);
     };
 
+    // Подтверждение удаления
     const handleConfirmDelete = async () => {
         if (!imageToDeleteId || !token) return;
 
@@ -392,30 +313,16 @@ const CatalogPage: React.FC = () => {
         }
     };
 
+    // Отмена удаления
     const handleCancelDelete = () => {
         setShowDeleteModal(false);
         setImageToDeleteId(null);
         setDeleteError('');
     };
 
-    const handleTrackClick = (image: WhaleImage) => {
-        const newFilters = {
-            whale_type_id: image.whale_type?.id || '',
-            username: '',
-            limit: filters.limit,
-            name: image.name || '',
-            gender: image.gender || ''
-        };
-        setFilters(newFilters);
-        setTrackedImageId(image.id);
-
-        const params = new URLSearchParams();
-        if (newFilters.whale_type_id) params.append('whale_type_id', newFilters.whale_type_id);
-        if (newFilters.name) params.append('name', newFilters.name);
-        if (newFilters.gender) params.append('gender', newFilters.gender);
-        params.append('limit', newFilters.limit.toString());
-
-        fetchImages(`http://localhost:80/api/v1/public/whale/images?${params.toString()}`);
+    // Обработчик клика по маркеру на карте
+    const handleMarkerClick = (image: WhaleImage) => {
+        handleImageClick(image);
     };
 
     if (loading && images.length === 0) return (
@@ -443,236 +350,135 @@ const CatalogPage: React.FC = () => {
             )}
 
             <h1>Каталог изображений</h1>
-            <br></br>
+            <br />
 
-            <div className="filters-map-container">
-                <form
-                    onSubmit={handleFilterSubmit}
-                    className={`filters-form ${!isFiltersExpanded ? 'collapsed' : ''}`}
-                >
-                    <button
-                        type="button"
-                        className="filter-toggle-btn"
-                        onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
-                        title={isFiltersExpanded ? "Свернуть фильтры" : "Развернуть фильтры"}
+            {/* Новый контейнер: фильтры слева, карта справа */}
+            <div className="filters-map-layout">
+                <div className="filters-sidebar">
+                    <form
+                        onSubmit={handleFilterSubmit}
+                        className={`filters-form-static ${!isFiltersExpanded ? 'collapsed' : ''}`}
                     >
-                        {isFiltersExpanded ? '−' : '+'}
-                    </button>
+                        <div className="filter-header">
+                            <h3>Фильтры поиска</h3>
+                            <button
+                                type="button"
+                                className="filter-toggle-btn-static"
+                                onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+                                title={isFiltersExpanded ? "Свернуть фильтры" : "Развернуть фильтры"}
+                            >
+                                {isFiltersExpanded ? '−' : '+'}
+                            </button>
+                        </div>
 
-                    <h3>Фильтры поиска</h3>
+                        {isFiltersExpanded && (
+                            <>
+                                <div className="filter-group">
+                                    <label>Вид кита:</label>
+                                    <select
+                                        name="whale_type_id"
+                                        value={filters.whale_type_id}
+                                        onChange={handleFilterChange}
+                                        className="filter-input"
+                                        disabled={whaleTypesLoading}
+                                    >
+                                        <option value="">Любой вид</option>
+                                        {!whaleTypesLoading && whaleTypes.map((type) => (
+                                            <option key={type.id} value={type.id}>
+                                                {type.species_rus} ({type.species_eng})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                    <div className="filter-group">
-                        <label>Вид кита:</label>
-                        <select
-                            name="whale_type_id"
-                            value={filters.whale_type_id}
-                            onChange={handleFilterChange}
-                            className="filter-input"
-                            disabled={whaleTypesLoading}
-                        >
-                            <option value="">Любой вид</option>
-                            {!whaleTypesLoading && whaleTypes.map((type) => (
-                                <option key={type.id} value={type.id}>
-                                    {type.species_rus} ({type.species_eng})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                                <div className="filter-group">
+                                    <label>Имя кита:</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={filters.name}
+                                        onChange={handleFilterChange}
+                                        className="filter-input"
+                                    />
+                                </div>
 
-                    <div className="filter-group">
-                        <label>Имя кита:</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={filters.name}
-                            onChange={handleFilterChange}
-                            className="filter-input"
-                        />
-                    </div>
+                                <div className="filter-group">
+                                    <label>Пол:</label>
+                                    <select
+                                        name="gender"
+                                        value={filters.gender}
+                                        onChange={handleFilterChange}
+                                        className="filter-input"
+                                    >
+                                        <option value="">Любой</option>
+                                        <option value="муж">Мужской</option>
+                                        <option value="жен">Женский</option>
+                                        <option value="детеныш">Детеныш</option>
+                                    </select>
+                                </div>
 
-                    <div className="filter-group">
-                        <label>Пол:</label>
-                        <select
-                            name="gender"
-                            value={filters.gender}
-                            onChange={handleFilterChange}
-                            className="filter-input"
-                        >
-                            <option value="">Любой</option>
-                            <option value="муж">Мужской</option>
-                            <option value="жен">Женский</option>
-                            <option value="детеныш">Детеныш</option>
-                        </select>
-                    </div>
+                                <div className="filter-group">
+                                    <label>Имя пользователя:</label>
+                                    <input
+                                        type="text"
+                                        name="username"
+                                        value={filters.username}
+                                        onChange={handleFilterChange}
+                                        className="filter-input"
+                                    />
+                                </div>
 
-                    <div className="filter-group">
-                        <label>Имя пользователя:</label>
-                        <input
-                            type="text"
-                            name="username"
-                            value={filters.username}
-                            onChange={handleFilterChange}
-                            className="filter-input"
-                        />
-                    </div>
+                                <div className="filter-group">
+                                    <label>Количество изображений на странице: {filters.limit}</label>
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="30"
+                                        value={filters.limit}
+                                        onChange={(e) => setFilters({...filters, limit: Number(e.target.value)})}
+                                        className="limit-slider"
+                                    />
+                                </div>
 
-                    <div className="filter-group">
-                        <label>Количество изображений на странице: {filters.limit}</label>
-                        <input
-                            type="range"
-                            min="1"
-                            max="30"
-                            value={filters.limit}
-                            onChange={(e) => setFilters({...filters, limit: Number(e.target.value)})}
-                            className="limit-slider"
-                        />
-                    </div>
+                                <div className="filter-group">
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={routeEnabled}
+                                            onChange={(e) => setRouteEnabled(e.target.checked)}
+                                            disabled={!filters.name.trim()}
+                                        />
+                                        <span>Построить маршрут по имени</span>
+                                    </label>
+                                    {!filters.name.trim() && (
+                                        <small className="hint" style={{ color: '#666' }}>
+                                            Укажите имя кита для активации
+                                        </small>
+                                    )}
+                                </div>
 
-                    <div className="filter-buttons">
-                        <button type="submit" className="search-btn">
-                            Поиск
-                        </button>
-                        <button type="button" onClick={resetFilters} className="reset-btn">
-                            Сбросить
-                        </button>
-                    </div>
-                </form>
+                                <div className="filter-buttons">
+                                    <button type="submit" className="search-btn">
+                                        Поиск
+                                    </button>
+                                    <button type="button" onClick={resetFilters} className="reset-btn">
+                                        Сбросить
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </form>
+                </div>
 
                 <div className="map-container">
-                    <MapContainer
-                        center={[61, 90]}
-                        zoom={clusterZoom}
-                        className="leaflet-map"
-                        style={{ border: '2px solid var(--primary-blue)', borderRadius: '8px' }}
-                        attributionControl={false}
-                    >
-                        <TileLayer
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-                        <MarkerClusterGroup
-                            chunkedLoading
-                            maxClusterRadius={50}
-                            spiderfyOnMaxZoom={true}
-                            showCoverageOnHover={true}
-                            zoomToBoundsOnClick={true}
-                            eventHandlers={{
-                                clusterclick: (e: ClusterClickEvent) => {
-                                    const bounds = e.layer.getBounds();
-                                    const center = bounds.getCenter();
-                                    setClusterZoom(EXPANDED_ZOOM_LEVEL);
-                                    e.target._map.setView(center, EXPANDED_ZOOM_LEVEL);
-                                }
-                            }}
-                            iconCreateFunction={(cluster: CustomMarkerCluster) => {
-                                const childMarkers = cluster.getAllChildMarkers();
-                                let totalImages = 0;
-
-                                childMarkers.forEach(marker => {
-                                    const popupContent = marker.getPopup()?.getContent();
-                                    if (typeof popupContent === 'string') {
-                                        const tempDiv = document.createElement('div');
-                                        tempDiv.innerHTML = popupContent;
-                                        const imagesScroll = tempDiv.querySelector('.images-scroll');
-                                        if (imagesScroll) {
-                                            totalImages += imagesScroll.children.length;
-                                        } else {
-                                            totalImages += 1;
-                                        }
-                                    } else {
-                                        totalImages += 1;
-                                    }
-                                });
-
-                                const firstMarker = childMarkers[0];
-                                const iconHtml = (firstMarker.options.icon as L.DivIcon).options.html;
-                                const firstImageUrl = typeof iconHtml === 'string' 
-                                    ? iconHtml.match(/src="([^"]+)"/)?.[1] || ''
-                                    : '';
-
-                                return L.divIcon({
-                                    html: `<div class="marker-cluster">
-                                        <img src="${firstImageUrl}" alt="Cluster" class="cluster-image"/>
-                                        <div class="cluster-count">${totalImages}</div>
-                                    </div>`,
-                                    className: '',
-                                    iconSize: L.point(40, 40)
-                                });
-                            }}
-                        >
-                            {Object.entries(groupNearbyImages(images)).map(([key, group]) => {
-                                const [lat, lng] = key.split(',').map(Number);
-                                const firstImage = group[0];
-
-                                const customIcon = L.divIcon({
-                                    className: '',
-                                    html: `<div class="custom-marker-icon">
-                                        <img src="${processImageUrl(firstImage.image_url)}" alt="Whale"/>
-                                        ${group.length > 1 ? `
-                                            <div class="marker-count-badge" title="${group.length} в этой точке">
-                                                <span class="marker-count">${group.length}</span>
-                                            </div>
-                                        ` : ''}
-                                    </div>`,
-                                    iconSize: [40, 40],
-                                    iconAnchor: [20, 40],
-                                    popupAnchor: [0, -42]
-                                });
-
-                                return (
-                                    <Marker 
-                                        key={key} 
-                                        position={[lat, lng]} 
-                                        icon={customIcon}
-                                    >
-                                        <Popup className="cluster-popup">
-                                            <div className="cluster-content">
-                                                <div className="images-scroll">
-                                                    {group.map((image) => (
-                                                        <div key={image.id} className="image-item">
-                                                            <img
-                                                                src={image.image_url}
-                                                                alt={image.description}
-                                                                className="popup-image"
-                                                            />
-                                                            <div className="image-info">
-                                                                {image.name && <p><strong>Имя:</strong> {image.name}</p>}
-                                                                {image.whale_type && (
-                                                                    <p><strong>Вид:</strong> {image.whale_type.species_rus} ({image.whale_type.species_eng})</p>
-                                                                )}
-                                                                {image.gender && <p><strong>Пол:</strong> {image.gender}</p>}
-                                                                <p><strong>Встреча:</strong> {new Date(image.saw_at).toLocaleDateString()}</p>
-                                                                <div className="popup-action-buttons">
-                                                                    <button
-                                                                        className="track-btn"
-                                                                        onClick={() => handleTrackClick(image)}
-                                                                        disabled={trackedImageId === image.id}
-                                                                    >
-                                                                        Отследить
-                                                                    </button>
-                                                                    <button
-                                                                        className="cancel-track-btn"
-                                                                        onClick={resetFilters}
-                                                                        disabled={trackedImageId !== image.id}
-                                                                    >
-                                                                        Отмена
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                {group.length > 1 && (
-                                                    <div className="location-count">
-                                                        {group.length} изображений в этой точке
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </Popup>
-                                    </Marker>
-                                );
-                            })}
-                        </MarkerClusterGroup>
-                    </MapContainer>
+                    <TrackingMap
+                        observations={images}
+                        trackedWhaleName={filters.name}
+                        routeEnabled={routeEnabled}
+                        onMarkerClick={handleMarkerClick}
+                        isScientist={isScientist}
+                        options={{ center: [61, 90], zoom: 3 }}
+                    />
                 </div>
             </div>
 
@@ -725,8 +531,8 @@ const CatalogPage: React.FC = () => {
                                 <p className="whale-gender">
                                     <strong>Пол:</strong>
                                     {image.gender === 'муж' ? ' Мужской ♂️' :
-                                     image.gender === 'жен' ? ' Женский♀️' :
-                                     image.gender === 'детеныш' ? ' 👶 Детеныш' : ` ${image.gender}`}
+                                        image.gender === 'жен' ? ' Женский♀️' :
+                                            image.gender === 'детеныш' ? ' 👶 Детеныш' : ` ${image.gender}`}
                                 </p>
                             )}
 
@@ -736,12 +542,12 @@ const CatalogPage: React.FC = () => {
                                 <div className="user-info">
                                     <span className="author">👤 {image.username}</span>
                                     <span className="date">
-                    🗓 {new Date(image.saw_at).toLocaleDateString('en-US', {
+                                        🗓 {new Date(image.saw_at).toLocaleDateString('en-US', {
                                         year: 'numeric',
                                         month: 'long',
                                         day: 'numeric'
                                     })}
-                  </span>
+                                    </span>
                                 </div>
 
                                 {(image.latitude || image.longitude) && (
@@ -847,11 +653,11 @@ const CatalogPage: React.FC = () => {
                         <p>Вы уверены, что хотите удалить это изображение? Это действие необратимо.</p>
 
                         {deleteError && (
-                             <div className="error-message modal-error">
-                               {deleteError}
-                               <button onClick={() => setDeleteError('')}>×</button>
-                             </div>
-                         )}
+                            <div className="error-message modal-error">
+                                {deleteError}
+                                <button onClick={() => setDeleteError('')}>×</button>
+                            </div>
+                        )}
 
                         <div className="modal-buttons">
                             <button
