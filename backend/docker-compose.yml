@@ -22,7 +22,7 @@ services:
 
   humpback-whale-minio:
     restart: always
-    image: bitnami/minio:latest
+    image: soldevelo/minio:latest
     container_name: humpback-whale-minio
     ports:
       - '9000:9000'
